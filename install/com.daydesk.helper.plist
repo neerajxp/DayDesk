@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd user agent for the DayDesk helper.
+
+  Installed to ~/Library/LaunchAgents/com.daydesk.helper.plist by install.sh,
+  which rewrites the placeholder paths. Runs as your user (not root) so the
+  helper can reach your login keychain — a root daemon could not.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.daydesk.helper</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>__NODE_PATH__</string>
+      <string>__HELPER_ENTRY__</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__HELPER_DIR__</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+      <key>SuccessfulExit</key>
+      <false/>
+    </dict>
+
+    <!-- Back off rather than hammering Yahoo if the helper crash-loops. -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/helper.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/helper.error.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+  </dict>
+</plist>
