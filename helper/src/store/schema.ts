@@ -199,6 +199,16 @@ const MIGRATIONS: readonly Migration[] = [
       CREATE INDEX idx_task_links_task ON task_links (task_id);
     `,
   },
+  {
+    version: 6,
+    name: 'chat-rules-version',
+    // Which version of the chat rules last read each message. Existing rows
+    // start at 1, so the first start after an upgrade re-reads recent chat
+    // with the current rules — a message missed by older rules is not lost.
+    up: `
+      ALTER TABLE chat_messages ADD COLUMN rules_version INTEGER NOT NULL DEFAULT 1;
+    `,
+  },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;

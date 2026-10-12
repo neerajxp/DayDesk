@@ -12,7 +12,8 @@ import type { ChatSource } from '../../types/tasks.js';
 import { bus } from '../../events.js';
 import * as accountsStore from '../../store/accounts.js';
 import * as chatStore from '../../store/chat.js';
-import { extractChatTask } from '../../tasks/chat.js';
+import { CHAT_RULES_VERSION, extractChatTask } from '../../tasks/chat.js';
+import { rescanChatMessages } from '../../tasks/chatScan.js';
 import { ingest } from '../../tasks/ingest.js';
 
 export interface ChatRouteDeps {
@@ -109,11 +110,13 @@ export async function registerChatRoutes(app: FastifyInstance, deps: ChatRouteDe
           const row = chatStore.insertChatMessage(deps.db, message);
           if (!row.isNew) return null;
           const candidate = extractChatTask(message);
-          return ingest(deps.db, account.id, { chatMessageId: row.id }, {
+          const ingested = ingest(deps.db, account.id, { chatMessageId: row.id }, {
             candidates: candidate ? [candidate] : [],
             text: message.text,
             now: new Date(now),
           });
+          chatStore.markChatChecked(deps.db, row.id, CHAT_RULES_VERSION);
+          return ingested;
         })();
 
         if (result === null) {
@@ -125,6 +128,13 @@ export async function registerChatRoutes(app: FastifyInstance, deps: ChatRouteDe
         linked += result.linked;
         firstTitle ??= result.added[0]?.title ?? null;
       }
+
+      // Anything stored earlier but read by older rules gets a second look too,
+      // so a resend from the WhatsApp tab ("Sync now") is never a dead end.
+      const rescan = rescanChatMessages(deps.db, account.id, new Date(now));
+      added += rescan.added;
+      linked += rescan.linked;
+      firstTitle ??= rescan.firstTitle;
 
       // A new link changes a task's trail, so the board refreshes for it too.
       if (added > 0 || linked > 0) bus.publish({ type: 'tasks:changed', added, firstTitle });

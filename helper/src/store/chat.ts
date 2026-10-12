@@ -34,6 +34,48 @@ export function chatMessageKey(input: ChatMessageInput): string {
     .digest('hex');
 }
 
+export interface StoredChatMessage {
+  readonly id: number;
+  readonly chatName: string;
+  readonly sender: string;
+  readonly text: string;
+  readonly isFromMe: boolean;
+  readonly sentAt: Date;
+}
+
+/** Messages sent since `sinceIso` that an older version of the chat rules last read. */
+export function listChatRescanTargets(
+  db: Database,
+  options: { sinceIso: string; rulesVersion: number },
+): readonly StoredChatMessage[] {
+  const rows = db
+    .prepare(
+      `SELECT id, chat_name, sender, text, is_from_me, sent_at FROM chat_messages
+       WHERE sent_at >= ? AND rules_version < ?
+       ORDER BY sent_at`,
+    )
+    .all(options.sinceIso, options.rulesVersion) as {
+    id: number;
+    chat_name: string;
+    sender: string;
+    text: string;
+    is_from_me: number;
+    sent_at: string;
+  }[];
+  return rows.map((row) => ({
+    id: row.id,
+    chatName: row.chat_name,
+    sender: row.sender,
+    text: row.text,
+    isFromMe: row.is_from_me === 1,
+    sentAt: new Date(row.sent_at),
+  }));
+}
+
+export function markChatChecked(db: Database, id: number, rulesVersion: number): void {
+  db.prepare('UPDATE chat_messages SET rules_version = ? WHERE id = ?').run(rulesVersion, id);
+}
+
 /** Insert one message. `isNew` is false when it was already stored. */
 export function insertChatMessage(db: Database, input: ChatMessageInput): { id: number; isNew: boolean } {
   const key = chatMessageKey(input);

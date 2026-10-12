@@ -10,6 +10,8 @@ import { normalizeEntry } from './parse.js';
 
 const WATCH_KEY = 'daydesk.whatsapp.watch';
 const STATUS_KEY = 'daydesk.whatsapp.status';
+/** Bumped by "Sync now"; the WhatsApp tab re-reads and resends what it can see. */
+const RESCAN_KEY = 'daydesk.whatsapp.rescan';
 
 /** The tab counts as connected if it reported within this window. */
 export const CONNECTED_WITHIN_MS = 90_000;
@@ -100,6 +102,20 @@ async function applyStatus(patch: Partial<WhatsAppStatus>): Promise<void> {
     ...((patch.diagnostics ?? current?.diagnostics) ? { diagnostics: patch.diagnostics ?? current?.diagnostics } : {}),
   };
   await chrome.storage.local.set({ [STATUS_KEY]: next });
+}
+
+/** Ask the WhatsApp tab to re-read everything it can see and send it again. */
+export async function requestWhatsAppRescan(): Promise<void> {
+  await chrome.storage.local.set({ [RESCAN_KEY]: Date.now() });
+}
+
+/** Listen for rescan requests — used by the WhatsApp tab. */
+export function onRescanRequest(listener: () => void): () => void {
+  const handler = (changes: Record<string, chrome.storage.StorageChange>, area: string): void => {
+    if (area === 'local' && RESCAN_KEY in changes) listener();
+  };
+  chrome.storage.onChanged.addListener(handler);
+  return () => chrome.storage.onChanged.removeListener(handler);
 }
 
 /** Subscribe to watch-list changes only — what the WhatsApp tab itself needs. */

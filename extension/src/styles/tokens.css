@@ -9,9 +9,9 @@
  */
 
 :root {
-  /* Paper */
-  --surface-page: oklch(97.5% 0.008 85);
-  --surface-raised: oklch(99.5% 0.004 85);
+  /* Paper — the board itself is plain white, like a mail client's message list. */
+  --surface-page: #ffffff;
+  --surface-raised: #ffffff;
   --surface-sunken: oklch(94.5% 0.01 85);
   --surface-hover: oklch(96% 0.012 70);
   --surface-selected: oklch(93% 0.028 65);

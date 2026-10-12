@@ -129,3 +129,47 @@ describe('mail and WhatsApp as one list', () => {
     expect(tasks().filter((task) => task.status === 'open')).toHaveLength(0);
   });
 });
+
+describe('stored WhatsApp messages get a second look', () => {
+  test('a message older rules missed becomes a task once the rules improve', async () => {
+    const { rescanChatMessages } = await import('../src/tasks/chatScan.js');
+    const db = createTestDatabase();
+    const accountId = upsertAccount(db, 'me@yahoo.com', 'yahoo').id;
+
+    // Stored by an older version of the rules, which found nothing in it.
+    const row = insertChatMessage(db, {
+      source: 'whatsapp',
+      chatName: 'Neeraj Maurya',
+      sender: '',
+      text: 'Pay pseg 25$ today',
+      isFromMe: false,
+      sentAt: NOW,
+    });
+    db.prepare('UPDATE chat_messages SET rules_version = 1 WHERE id = ?').run(row.id);
+
+    expect(rescanChatMessages(db, accountId, NOW)).toMatchObject({ checked: 1, added: 1, firstTitle: 'Pay pseg' });
+    expect(rescanChatMessages(db, accountId, NOW).checked).toBe(0);
+    expect(listTasks(db, accountId, { doneSince: '2000-01-01' })[0]).toMatchObject({ amount: '$25', kind: 'pay' });
+  });
+
+  test('re-reading never revives a task you already finished', async () => {
+    const { rescanChatMessages } = await import('../src/tasks/chatScan.js');
+    const db = createTestDatabase();
+    const accountId = upsertAccount(db, 'me@yahoo.com', 'yahoo').id;
+    const row = insertChatMessage(db, {
+      source: 'whatsapp',
+      chatName: 'Family',
+      sender: 'Mom',
+      text: 'pls pay the electricity bill',
+      isFromMe: false,
+      sentAt: NOW,
+    });
+    db.prepare('UPDATE chat_messages SET rules_version = 1 WHERE id = ?').run(row.id);
+    rescanChatMessages(db, accountId, NOW);
+    updateTask(db, accountId, listTasks(db, accountId, { doneSince: '2000-01-01' })[0]!.id, { status: 'dismissed' });
+
+    db.prepare('UPDATE chat_messages SET rules_version = 1').run();
+    rescanChatMessages(db, accountId, NOW);
+    expect(listTasks(db, accountId, { doneSince: '2000-01-01' })).toEqual([]);
+  });
+});

@@ -29,6 +29,7 @@ import { fetchAndStoreBody, type ParsedBody } from './bodies.js';
 import { syncAll, syncFolder, type SyncContext } from './sync.js';
 import * as tasksStore from '../store/tasks.js';
 import { scanForTasks, scanWindowStart } from '../tasks/scan.js';
+import { rescanChatMessages } from '../tasks/chatScan.js';
 
 const RECONNECT_BASE_MS = 5_000;
 const RECONNECT_MAX_MS = 5 * 60_000;
@@ -189,9 +190,11 @@ export class MailSession {
       console.warn(`DayDesk: body prefetch stopped early — ${describeImapError(error, this.provider ?? undefined)}`);
     }
 
-    const result = scanForTasks(this.db, this.accountId, { now, windowDays: config.taskScanDays });
-    if (result.added > 0 || result.linked > 0) {
-      bus.publish({ type: 'tasks:changed', added: result.added, firstTitle: result.firstTitle });
+    const mail = scanForTasks(this.db, this.accountId, { now, windowDays: config.taskScanDays });
+    const chat = rescanChatMessages(this.db, this.accountId, now);
+    const added = mail.added + chat.added;
+    if (added > 0 || mail.linked + chat.linked > 0) {
+      bus.publish({ type: 'tasks:changed', added, firstTitle: mail.firstTitle ?? chat.firstTitle });
     }
   }
 

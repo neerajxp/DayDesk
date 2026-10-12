@@ -26,6 +26,7 @@ import { SourcesButton } from '../features/sources/SourcesButton.js';
 import { SourcesSheet } from '../features/sources/SourcesSheet.js';
 import { useWhatsAppState } from '../features/sources/useWhatsAppState.js';
 import { ThemeMenu } from '../features/theme/ThemeMenu.js';
+import { requestWhatsAppRescan } from '../lib/whatsapp/settings.js';
 
 type ViewKey = 'loading' | 'helper-down' | 'needs-token' | 'needs-account' | 'today';
 
@@ -139,6 +140,9 @@ export function PanelShell() {
     if (!token) return;
     setTransientError(null);
     setIsSyncing(true);
+    // WhatsApp first: the tab resends while the mail sync runs, and the helper
+    // re-reads stored chat on every pass.
+    void requestWhatsAppRescan().catch(() => undefined);
     try {
       const result = await createApi(token).sync();
       setStatus(result.status);

@@ -27,6 +27,47 @@ export interface ChatInput {
 const MAX_TITLE_CHARS = 90;
 const MAX_TEXT_CHARS = 2_000;
 
+/**
+ * Bump whenever the chat rules change. Stored messages checked by an older
+ * version are checked again (see chatScan.ts), so a better rule also catches
+ * messages that arrived before it existed. Safe: saving is idempotent and never
+ * revives a finished or dismissed task.
+ */
+export const CHAT_RULES_VERSION = 2;
+
+/**
+ * "Pay pseg 25$ today", "pay Ramesh" — a bare instruction to pay someone.
+ * Idioms that are not payments ("pay attention", "pay a visit") are excluded.
+ */
+const IMPERATIVE_PAY =
+  /^\s*(?:(?:please|pls|plz|kindly)\s+)?pay\s+(?!(?:attention|heed|respects?|tribute|a\s+visit|back|off|up|homage)\b)\S/i;
+
+/**
+ * A message that opens with an unambiguous action verb is an instruction:
+ * "call the plumber tomorrow", "book train tickets". Only verbs that are rarely
+ * used to open small talk — "get" and "check" are left out on purpose.
+ */
+const ACTION_START =
+  /^\s*(?:call|send|book|buy|renew|submit|collect|pick\s+up|drop\s+off|transfer|deposit|file|schedule|cancel|order|bring|fill|recharge|top\s+up|return|apply\s+for|email|reply\s+to|remind)\b/i;
+
+/** Tokens that end a payee's name in "pay <payee> <amount> <when>". */
+const PAYEE_STOP =
+  /^(?:[$€£₹\d].*|rs\.?|inr|usd|today|tonight|tomorrow|tmrw|by|on|before|for|at|this|next|asap|now|via|through|using|in|from|amount|of|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)$/i;
+const MAX_PAYEE_WORDS = 5;
+
+/** "Pay pseg 25$ today" → "pseg"; "pay the plumber 500 rs" → "the plumber". */
+function payeeAfterPay(text: string): string | null {
+  const rest = /\bpay\s+(.+)$/is.exec(text)?.[1] ?? '';
+  const words: string[] = [];
+  for (const raw of rest.split(/\s+/)) {
+    const word = raw.replace(/[.,;:!?]+$/, '');
+    if (!word || PAYEE_STOP.test(word) || words.length >= MAX_PAYEE_WORDS) break;
+    words.push(word);
+    if (raw !== word) break; // punctuation ends the name
+  }
+  return words.length > 0 ? words.join(' ') : null;
+}
+
 /** "todo: …", "Reminder - …", "remind me to …" — the user saying "this is a task". */
 const MARKER =
   /^\s*(?:todo|to-do|to\s+do|task|reminder|remind\s+me(?:\s+to)?|action(?:\s+item)?|note\s+to\s+self)\s*[:\-–—]?\s+(.+)$/is;
@@ -58,7 +99,8 @@ function firstSentence(text: string): string {
 function classify(text: string): TaskKind | 'vetoed' | null {
   const action = matchActionKind(text);
   if (action) return action.isVetoed ? 'vetoed' : action.kind;
-  if (REQUEST.test(text)) return 'todo';
+  if (IMPERATIVE_PAY.test(text)) return 'pay';
+  if (REQUEST.test(text) || ACTION_START.test(text)) return 'todo';
   return null;
 }
 
@@ -78,13 +120,18 @@ export function extractChatTask(input: ChatInput): TaskCandidate | null {
   if (!kind && dueDate && looksLikeDeadline(body)) kind = 'deadline';
   if (!kind) return null;
 
+  // Most specific first: "pay … to Sharma ji", then "pay the electricity bill",
+  // then a bare "pay pseg".
   const payee = kind === 'pay' ? payeeIn(body) : null;
   const payObject = kind === 'pay' && !payee ? payObjectIn(body) : null;
+  const barePayee = kind === 'pay' && !payee && !payObject ? payeeAfterPay(body) : null;
   const title = payee
     ? `Pay ${payee.replace(/\s+(?:for\s+)?(?:by|before|on)\b.*$/i, '')}`
     : payObject
       ? `Pay ${payObject}`
-      : firstSentence(body);
+      : barePayee
+        ? `Pay ${barePayee}`
+        : firstSentence(body);
 
   return {
     kind,

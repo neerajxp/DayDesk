@@ -17,7 +17,13 @@
  */
 
 import { cleanChatTitle, isWatched, parseDataId, parseListTime, parsePrePlainText } from '../lib/whatsapp/parse.js';
-import { onWatchListChange, readWatchList, writeStatus, type WhatsAppDiagnostics } from '../lib/whatsapp/settings.js';
+import {
+  onRescanRequest,
+  onWatchListChange,
+  readWatchList,
+  writeStatus,
+  type WhatsAppDiagnostics,
+} from '../lib/whatsapp/settings.js';
 import type { ChatMessagePayload, DeliverRequest, DeliverResponse } from '../lib/whatsapp/messaging.js';
 
 const SELECTORS = {
@@ -146,12 +152,21 @@ async function startWatcher(): Promise<void> {
     });
   });
 
+  // "Sync now" in the panel: forget what was sent and send it all again. The
+  // helper drops duplicates, so this costs nothing — and it rescues anything a
+  // failed delivery or an older rule version left behind.
+  const unsubscribeRescan = onRescanRequest(() => {
+    delivered.clear();
+    scheduleScan();
+  });
+
   function stop(): void {
     observer.disconnect();
     clearInterval(heartbeatTimer);
     if (scanTimer) clearTimeout(scanTimer);
     try {
       unsubscribe();
+      unsubscribeRescan();
     } catch {
       // Already torn down with the extension context.
     }

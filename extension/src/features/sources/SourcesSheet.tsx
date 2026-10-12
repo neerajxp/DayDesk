@@ -146,6 +146,10 @@ export function SourcesSheet({ accountEmail, providerName, isMailOn, onDisconnec
             {delivery && !delivery.ok && <p className="error-text">{delivery.message}</p>}
 
             <p className="source__hint">
+              Messages that arrived while WhatsApp Web was closed: DayDesk sees the latest one in each chat as soon as
+              the tab is back. For older ones, open the chat once — DayDesk reads what is on screen.
+            </p>
+            <p className="source__hint">
               Only these chats are read. Use the chat or group name exactly as WhatsApp shows it, or a phone number.
             </p>
 

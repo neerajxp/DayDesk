@@ -86,6 +86,38 @@ describe('extractChatTask', () => {
     expect(extractChatTask(chat('pay school fees oct-20'))?.dueDate).toBe('2026-10-20');
   });
 
+  test('reads a bare "pay <payee> <amount> <when>" instruction', () => {
+    expect(extractChatTask(chat('Pay pseg 25$ today'))).toEqual({
+      kind: 'pay',
+      title: 'Pay pseg',
+      dueDate: '2026-10-10',
+      amount: '$25',
+    });
+    expect(extractChatTask(chat('Pay PSEG $25 by Friday'))).toMatchObject({ kind: 'pay', title: 'Pay PSEG', dueDate: '2026-10-16' });
+    expect(extractChatTask(chat('pay Ramesh'))).toMatchObject({ kind: 'pay', title: 'Pay Ramesh' });
+    expect(extractChatTask(chat('pay the plumber 500 rs'))).toMatchObject({ kind: 'pay', title: 'Pay the plumber', amount: '₹500' });
+  });
+
+  test('does not mistake "pay attention" and friends for a payment', () => {
+    expect(extractChatTask(chat('Pay attention to the road'))).toBeNull();
+    expect(extractChatTask(chat('pay a visit to grandma'))?.kind).not.toBe('pay');
+  });
+
+  test('a message that opens with a clear action verb is a to-do', () => {
+    expect(extractChatTask(chat('call the plumber tomorrow'))).toMatchObject({
+      kind: 'todo',
+      title: 'Call the plumber tomorrow',
+      dueDate: '2026-10-11',
+    });
+    expect(extractChatTask(chat('Book train tickets for Diwali'))?.kind).toBe('todo');
+    expect(extractChatTask(chat('recharge the fastag'))?.kind).toBe('todo');
+  });
+
+  test('ordinary chat that merely contains a verb stays quiet', () => {
+    expect(extractChatTask(chat('I will call you later'))).toBeNull();
+    expect(extractChatTask(chat('Booked! see you there'))).toBeNull();
+  });
+
   test('keeps a dated deadline even without a request word', () => {
     expect(extractChatTask(chat('Passport expires on Nov 2'))).toMatchObject({ kind: 'deadline', dueDate: '2026-11-02' });
   });
