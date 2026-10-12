@@ -21,6 +21,13 @@ export interface DayDeskConfig {
   readonly reconcileIntervalMinutes: number;
   /** Raise an OS notification when new mail arrives and no panel is connected. */
   readonly osNotifications: boolean;
+  /** How many days of inbox mail the task scanner looks back over. */
+  readonly taskScanDays: number;
+  /**
+   * Bodies to prefetch per sync pass so the task rules can read more than the
+   * subject line. Bounded so a first sync does not hammer Yahoo.
+   */
+  readonly bodyPrefetchLimit: number;
 }
 
 const DEFAULTS: DayDeskConfig = {
@@ -29,6 +36,8 @@ const DEFAULTS: DayDeskConfig = {
   fetchBatchSize: 100,
   reconcileIntervalMinutes: 15,
   osNotifications: true,
+  taskScanDays: 30,
+  bodyPrefetchLimit: 40,
 };
 
 function coerceNumber(value: unknown, fallback: number, min: number, max: number): number {
@@ -65,6 +74,8 @@ export function loadConfig(): DayDeskConfig {
       1440,
     ),
     osNotifications: fromDisk.osNotifications ?? DEFAULTS.osNotifications,
+    taskScanDays: coerceNumber(fromDisk.taskScanDays, DEFAULTS.taskScanDays, 1, 365),
+    bodyPrefetchLimit: coerceNumber(fromDisk.bodyPrefetchLimit, DEFAULTS.bodyPrefetchLimit, 0, 500),
   };
 
   return cached;

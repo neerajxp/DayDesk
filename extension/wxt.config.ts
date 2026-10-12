@@ -13,7 +13,7 @@ export default defineConfig({
   manifest: {
     name: 'DayDesk',
     short_name: 'DayDesk',
-    description: 'A local-first archive and reader for your Yahoo mail, in the side panel.',
+    description: 'Your day at a glance: to-dos from your Yahoo mail and chosen WhatsApp chats, in the side panel.',
     version: '0.1.0',
     // Side Panel API landed in 114; openPanelOnActionClick needs 116.
     minimum_chrome_version: '116',

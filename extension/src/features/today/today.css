@@ -1,0 +1,752 @@
+/*
+ * Today board.
+ *
+ * Reads like the top of a day planner: a large serif date, one sentence of
+ * briefing, then the work grouped by when it is due. Each task carries the
+ * colour of its kind on a thin rail and its label; everything else stays ink
+ * on paper so the colour means something.
+ */
+
+.today {
+  padding-bottom: var(--space-xl);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.today__header {
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.today__weekday {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.today__date {
+  margin: var(--space-hair) 0 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.today__briefing {
+  margin: var(--space-sm) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.today__error {
+  margin: var(--space-sm) var(--space-lg) 0;
+}
+
+.today__skeleton {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+
+.today__empty {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-xl) var(--space-lg);
+  padding: var(--space-lg);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-lg);
+}
+
+.today__empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+/* ── Quick add ──────────────────────────────────────────────────────────── */
+
+.quick-add {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 var(--space-lg) var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-raised);
+  transition: border-color var(--duration-fast) var(--ease-out-expo);
+}
+
+.quick-add:focus-within {
+  border-color: var(--accent);
+}
+
+.quick-add__plus {
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--accent-strong);
+}
+
+.quick-add__input {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.quick-add__input:focus {
+  outline: none;
+}
+
+.quick-add__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.quick-add__hint {
+  flex-shrink: 0;
+  padding: 0.1em 0.5em;
+  background: var(--accent-wash);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+/* ── Buckets ────────────────────────────────────────────────────────────── */
+
+.bucket {
+  margin-top: var(--space-lg);
+}
+
+.bucket__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0 var(--space-lg) var(--space-xs);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.bucket[data-bucket='overdue'] .bucket__title {
+  color: var(--danger);
+}
+
+.bucket[data-bucket='today'] .bucket__title {
+  color: var(--text-primary);
+}
+
+.bucket__count {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.bucket__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* ── Task row ───────────────────────────────────────────────────────────── */
+
+.task {
+  --kind: var(--kind-todo);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--rule);
+  transition: background var(--duration-fast) var(--ease-out-expo);
+}
+
+.task[data-kind='pay'] { --kind: var(--kind-pay); }
+.task[data-kind='sign'] { --kind: var(--kind-sign); }
+.task[data-kind='cheque'] { --kind: var(--kind-cheque); }
+.task[data-kind='reply'] { --kind: var(--kind-reply); }
+.task[data-kind='deadline'] { --kind: var(--kind-deadline); }
+
+/* The kind rail: a thin stripe of the task's colour on the leading edge. */
+.task::before {
+  content: '';
+  position: absolute;
+  inset-block: var(--space-md);
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--kind);
+  transition: opacity var(--duration-normal) var(--ease-out-expo);
+}
+
+.task:hover,
+.task:focus-within {
+  background: var(--surface-hover);
+}
+
+.task__check {
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-top: 0.1rem;
+  padding: 0;
+  appearance: none;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out-expo),
+    background var(--duration-fast) var(--ease-out-expo),
+    transform var(--duration-fast) var(--ease-out-expo);
+}
+
+.task__check:hover {
+  border-color: var(--kind);
+}
+
+.task__check:active {
+  transform: scale(0.9);
+}
+
+.task__check svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: var(--text-inverted);
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  transition: stroke-dashoffset var(--duration-normal) var(--ease-out-expo);
+}
+
+.task__body {
+  min-width: 0;
+}
+
+.task__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.task__kind {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kind);
+}
+
+.task__due {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.task__due[data-overdue='true'] {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.task__title {
+  margin: var(--space-hair) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  /* A drawn-on line, so ticking off reads as crossing out. */
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 1px;
+  transition:
+    background-size var(--duration-normal) var(--ease-out-expo),
+    color var(--duration-normal) var(--ease-out-expo);
+  width: fit-content;
+}
+
+.task__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-sm);
+  margin: var(--space-xs) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.task__amount {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Who it is from, sitting with the source badge: "WhatsApp  Family · Mom". */
+.task__sender {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  flex: 0 1 auto;
+}
+
+/*
+ * Secondary actions surface only on hover or keyboard focus. They float over
+ * the row's bottom-right corner instead of taking a line, so the resting board
+ * stays dense and hovering never shifts the layout.
+ */
+.task__actions {
+  position: absolute;
+  right: var(--space-lg);
+  bottom: var(--space-sm);
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-hair) 0 var(--space-hair) var(--space-md);
+  background: linear-gradient(to right, transparent, var(--surface-hover) var(--space-md));
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition:
+    opacity var(--duration-fast) var(--ease-out-expo),
+    transform var(--duration-fast) var(--ease-out-expo);
+}
+
+.task:hover .task__actions,
+.task:focus-within .task__actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+/* No hover on touch screens: give the actions their own line instead. */
+@media (hover: none) {
+  .task__actions {
+    position: static;
+    margin-top: var(--space-xs);
+    padding: 0;
+    background: none;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+
+.task__action {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+.task__action:hover {
+  text-decoration: underline;
+}
+
+.task__action--quiet {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ── Done ───────────────────────────────────────────────────────────────── */
+
+.task[data-done='true']::before {
+  opacity: 0.25;
+}
+
+.task[data-done='true'] .task__check {
+  border-color: var(--positive);
+  background: var(--positive);
+}
+
+.task[data-done='true'] .task__check svg {
+  stroke-dashoffset: 0;
+}
+
+.task[data-done='true'] .task__title {
+  background-size: 100% 1px;
+  color: var(--text-tertiary);
+}
+
+.task[data-done='true'] .task__kind,
+.task[data-done='true'] .task__meta,
+.task[data-done='true'] .task__amount {
+  color: var(--text-tertiary);
+}
+
+.bucket[data-bucket='done'] .task {
+  padding-block: var(--space-sm);
+}
+
+/* ── Sources: badges on a task ──────────────────────────────────────────── */
+
+.source-badge {
+  --source: var(--source-email);
+  padding: 0 0.4em;
+  border: 1px solid color-mix(in oklch, var(--source) 45%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--source);
+}
+
+.source-badge[data-source='whatsapp'] {
+  --source: var(--source-whatsapp);
+}
+
+.task__quote {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-sm);
+  border-left: 2px solid color-mix(in oklch, var(--source-whatsapp) 50%, transparent);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── "Says done" hint — a suggestion, styled as one ─────────────────────── */
+
+.done-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-sm);
+  background: color-mix(in oklch, var(--positive) 12%, var(--surface-raised));
+  border: 1px solid color-mix(in oklch, var(--positive) 35%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.done-hint__text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.done-hint__text strong {
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.done-hint__confirm {
+  flex-shrink: 0;
+  appearance: none;
+  border: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--positive);
+  color: var(--text-inverted);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 650;
+  cursor: pointer;
+  transition: filter var(--duration-fast) var(--ease-out-expo), transform var(--duration-fast) var(--ease-out-expo);
+}
+
+.done-hint__confirm:hover {
+  filter: brightness(1.08);
+}
+
+.done-hint__confirm:active {
+  transform: translateY(1px);
+}
+
+/* ── Trail: the conversation across mail and WhatsApp ───────────────────── */
+
+.trail {
+  list-style: none;
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+}
+
+.trail__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.75rem 1fr;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-sm);
+}
+
+/* The thread line joining trail steps. */
+.trail__item::before {
+  content: '';
+  position: absolute;
+  left: calc(0.375rem - 0.5px);
+  top: 0.9rem;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule-strong);
+}
+
+.trail__item:last-child::before {
+  display: none;
+}
+
+.trail__dot {
+  width: 7px;
+  height: 7px;
+  margin: 0.4rem auto 0;
+  border-radius: 50%;
+  background: var(--source-email);
+}
+
+.trail__item[data-source='whatsapp'] .trail__dot {
+  background: var(--source-whatsapp);
+}
+
+.trail__item[data-relation='done-hint'] .trail__dot {
+  background: var(--positive);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--positive) 20%, transparent);
+}
+
+.trail__body {
+  min-width: 0;
+}
+
+.trail__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.trail__who {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.trail__relation::before {
+  content: '·';
+  margin-right: var(--space-xs);
+}
+
+.trail__time {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.trail__text {
+  margin: var(--space-hair) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.trail__text--link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  color: var(--source-email);
+  cursor: pointer;
+}
+
+.trail__text--link:hover {
+  text-decoration: underline;
+}
+
+/* ── Sources strip + WhatsApp watch list ────────────────────────────────── */
+
+.sources {
+  margin: 0 var(--space-lg);
+}
+
+.sources__strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.sources__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 600;
+}
+
+.sources__item--button {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sources__item--button:hover .sources__detail {
+  color: var(--accent-strong);
+}
+
+.sources__detail {
+  font-weight: 400;
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-out-expo);
+}
+
+.sources__chevron {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+}
+
+.sources__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.sources__dot[data-on='true'] {
+  background: var(--positive);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--positive) 18%, transparent);
+}
+
+.watch {
+  display: grid;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-raised);
+}
+
+.watch__intro,
+.watch__notice {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.watch__link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--source-whatsapp);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.watch__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-hair);
+}
+
+.watch__entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.watch__kind {
+  flex-shrink: 0;
+  width: 3.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.watch__name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.watch__remove {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0 var(--space-xs);
+  font: inherit;
+  font-size: var(--text-md);
+  line-height: 1;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.watch__remove:hover {
+  color: var(--danger);
+}
+
+.watch__add {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.watch__add .field__input {
+  flex: 1;
+  min-width: 0;
+  padding-block: var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+.watch__add .button {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--text-sm);
+}

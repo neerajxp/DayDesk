@@ -34,6 +34,18 @@
   --rule: oklch(88% 0.012 70);
   --rule-strong: oklch(78% 0.015 70);
 
+  /* Task kinds — each kind of work gets its own ink, used for the label and rail only */
+  --kind-pay: oklch(55% 0.13 62);
+  --kind-sign: oklch(50% 0.13 265);
+  --kind-cheque: oklch(50% 0.09 185);
+  --kind-reply: oklch(50% 0.12 150);
+  --kind-deadline: oklch(52% 0.15 18);
+  --kind-todo: oklch(46% 0.012 60);
+
+  /* Sources — where a task was heard: mail is ink-blue, WhatsApp its own green */
+  --source-email: oklch(48% 0.1 250);
+  --source-whatsapp: oklch(50% 0.12 155);
+
   /* Type */
   --font-display: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-sans: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
@@ -92,6 +104,17 @@
     --rule: oklch(27% 0.012 265);
     --rule-strong: oklch(36% 0.014 265);
 
+    --kind-pay: oklch(78% 0.12 72);
+    --kind-sign: oklch(76% 0.1 265);
+    --kind-cheque: oklch(76% 0.09 185);
+    --kind-reply: oklch(76% 0.11 150);
+    --kind-deadline: oklch(73% 0.13 18);
+    --kind-todo: oklch(72% 0.01 85);
+  --source-email: oklch(76% 0.09 250);
+  --source-whatsapp: oklch(77% 0.12 155);
+    --source-email: oklch(76% 0.09 250);
+    --source-whatsapp: oklch(77% 0.12 155);
+
     --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.4), 0 2px 8px oklch(0% 0 0 / 0.3);
     --shadow-overlay: 0 4px 24px oklch(0% 0 0 / 0.55);
   }
@@ -119,4 +142,11 @@
 
   --rule: oklch(27% 0.012 265);
   --rule-strong: oklch(36% 0.014 265);
+
+  --kind-pay: oklch(78% 0.12 72);
+  --kind-sign: oklch(76% 0.1 265);
+  --kind-cheque: oklch(76% 0.09 185);
+  --kind-reply: oklch(76% 0.11 150);
+  --kind-deadline: oklch(73% 0.13 18);
+  --kind-todo: oklch(72% 0.01 85);
 }

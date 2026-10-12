@@ -75,4 +75,5 @@ export type ServerEvent =
   | { readonly type: 'sync:finished'; readonly role: FolderRole; readonly added: number; readonly removed: number }
   | { readonly type: 'sync:error'; readonly role: FolderRole; readonly message: string }
   | { readonly type: 'mail:new'; readonly role: FolderRole; readonly count: number }
+  | { readonly type: 'tasks:changed'; readonly added: number; readonly firstTitle: string | null }
   | { readonly type: 'status'; readonly status: SyncStatus };

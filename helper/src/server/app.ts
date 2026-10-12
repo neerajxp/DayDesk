@@ -17,6 +17,8 @@ import { createAuthHook } from './auth.js';
 import { tokensMatch } from './token.js';
 import { registerMailRoutes } from './routes/mail.js';
 import { registerSystemRoutes } from './routes/system.js';
+import { registerTaskRoutes } from './routes/tasks.js';
+import { registerChatRoutes } from './routes/chat.js';
 
 /**
  * Paths the onRequest auth hook does not demand an Authorization header on.
@@ -67,7 +69,7 @@ export async function createServer(options: ServerOptions): Promise<DayDeskServe
     // known until the unpacked extension is loaded. Set DAYDESK_EXTENSION_ORIGIN
     // to pin it once you know it.
     origin: process.env.DAYDESK_EXTENSION_ORIGIN ?? /^chrome-extension:\/\/[a-p]{32}$/,
-    methods: ['GET', 'POST', 'DELETE'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     credentials: false,
   });
@@ -86,6 +88,8 @@ export async function createServer(options: ServerOptions): Promise<DayDeskServe
     restartSession: options.restartSession,
   });
   await registerMailRoutes(app, { db: options.db, session: options.session });
+  await registerTaskRoutes(app, { db: options.db });
+  await registerChatRoutes(app, { db: options.db });
 
   // ── Live event stream ────────────────────────────────────────────────────
   const sockets = new Set<import('ws').WebSocket>();

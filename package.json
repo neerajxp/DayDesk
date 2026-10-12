@@ -2,7 +2,7 @@
   "name": "daydesk",
   "version": "0.1.0",
   "private": true,
-  "description": "DayDesk — a local-first mail archive and reader, surfaced in the Chrome side panel.",
+  "description": "DayDesk \u2014 a local-first mail archive and reader, surfaced in the Chrome side panel.",
   "license": "AGPL-3.0-or-later",
   "workspaces": [
     "helper",
@@ -15,7 +15,7 @@
     "helper": "npm run dev --workspace=helper",
     "extension": "npm run dev --workspace=extension",
     "build": "npm run build --workspace=helper && npm run build --workspace=extension",
-    "test": "npm run test --workspace=helper",
+    "test": "npm run test --workspace=helper && npm run test --workspace=extension",
     "typecheck": "npm run typecheck --workspace=helper && npm run typecheck --workspace=extension"
   }
 }

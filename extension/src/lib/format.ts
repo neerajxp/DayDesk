@@ -8,30 +8,6 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/**
- * Compact timestamp for the list column: time today, weekday this week,
- * day/month this year, otherwise year. Keeps the column narrow while staying
- * unambiguous.
- */
-export function formatListDate(iso: string, now: Date = new Date()): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-
-  const elapsed = now.getTime() - date.getTime();
-  const sameDay = date.toDateString() === now.toDateString();
-
-  if (sameDay) {
-    return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  }
-  if (elapsed < 7 * DAY && elapsed >= 0) {
-    return date.toLocaleDateString(undefined, { weekday: 'short' });
-  }
-  if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-  }
-  return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-}
-
 /** Full timestamp for the detail header. */
 export function formatFullDate(iso: string | null): string {
   if (!iso) return 'Unknown date';

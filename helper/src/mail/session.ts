@@ -27,9 +27,13 @@ import { createClient, describeImapError } from './client.js';
 import { discoverFolders } from './discover.js';
 import { fetchAndStoreBody, type ParsedBody } from './bodies.js';
 import { syncAll, syncFolder, type SyncContext } from './sync.js';
+import * as tasksStore from '../store/tasks.js';
+import { scanForTasks, scanWindowStart } from '../tasks/scan.js';
 
 const RECONNECT_BASE_MS = 5_000;
 const RECONNECT_MAX_MS = 5 * 60_000;
+/** Prefetch downloads full source, attachments included; bigger messages wait until opened. */
+const PREFETCH_MAX_BYTES = 2 * 1024 * 1024;
 
 export class MailSession {
   private syncClient: ImapFlow | null = null;
@@ -82,7 +86,7 @@ export class MailSession {
 
       await this.ensureFoldersDiscovered();
       this.attachErrorHandlers();
-      void this.runSync(() => syncAll(this.context()));
+      void this.runSync(() => this.syncThenScan());
       await this.startIdle();
       this.startReconcileTimer();
     } catch (error) {
@@ -133,7 +137,7 @@ export class MailSession {
   /** Request a sync. Coalesces with any pass already running. */
   async requestSync(role?: FolderRole): Promise<void> {
     if (!this.syncClient?.usable) throw new Error('Not connected to Yahoo.');
-    await this.runSync(() => (role ? syncFolder(this.context(), role) : syncAll(this.context())));
+    await this.runSync(() => this.syncThenScan(role));
   }
 
   /** Fetch a body on demand, caching it. Returns null if the message is gone. */
@@ -159,6 +163,48 @@ export class MailSession {
       provider: this.provider,
       accountId: this.accountId,
     };
+  }
+
+  /**
+   * One pass: sync headers, prefetch recent bodies so the rules can read them,
+   * then scan for tasks. Runs inside runSync, so it owns the sync connection.
+   *
+   * A prefetch failure is not a sync failure — the scan still runs on whatever
+   * bodies arrived, and subject-only matching covers the rest.
+   */
+  private async syncThenScan(role?: FolderRole): Promise<void> {
+    await (role ? syncFolder(this.context(), role) : syncAll(this.context()));
+    if (role === 'sent' || this.accountId === null) return;
+
+    const config = loadConfig();
+    const now = new Date();
+    try {
+      await this.prefetchBodies(scanWindowStart(now, config.taskScanDays), config.bodyPrefetchLimit);
+    } catch (error) {
+      // Not surfaced as lastError: runSync clears that on success, and this is not fatal.
+      console.warn(`DayDesk: body prefetch stopped early — ${describeImapError(error)}`);
+    }
+
+    const result = scanForTasks(this.db, this.accountId, { now, windowDays: config.taskScanDays });
+    if (result.added > 0 || result.linked > 0) {
+      bus.publish({ type: 'tasks:changed', added: result.added, firstTitle: result.firstTitle });
+    }
+  }
+
+  private async prefetchBodies(sinceIso: string, limit: number): Promise<void> {
+    if (limit === 0 || this.accountId === null || !this.syncClient?.usable) return;
+    const inbox = foldersStore.getFolder(this.db, this.accountId, 'inbox');
+    if (!inbox) return;
+
+    const queue = tasksStore.listMissingBodies(this.db, this.accountId, {
+      sinceIso,
+      limit,
+      maxBytes: PREFETCH_MAX_BYTES,
+    });
+    for (const { id, uid } of queue) {
+      if (this.stopped) return;
+      await fetchAndStoreBody({ db: this.db, client: this.syncClient }, inbox.path, id, uid);
+    }
   }
 
   private async ensureFoldersDiscovered(): Promise<void> {
@@ -206,7 +252,7 @@ export class MailSession {
     if (!inbox) return;
 
     client.on('exists', () => {
-      void this.runSync(() => syncFolder(this.context(), 'inbox'));
+      void this.runSync(() => this.syncThenScan('inbox'));
     });
 
     // Opening read-only keeps IDLE from touching \Recent or \Seen.
@@ -251,7 +297,7 @@ export class MailSession {
     const intervalMs = loadConfig().reconcileIntervalMinutes * 60_000;
     this.reconcileTimer = setInterval(() => {
       if (this.stopped || !this.syncClient?.usable) return;
-      void this.runSync(() => syncAll(this.context()));
+      void this.runSync(() => this.syncThenScan());
     }, intervalMs);
     this.reconcileTimer.unref();
   }

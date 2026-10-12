@@ -84,7 +84,7 @@ export function MessageView({ message, onBack }: MessageViewProps) {
     <article className="detail">
       <header className="detail__header">
         <button type="button" className="detail__back" onClick={onBack}>
-          ← Back to list
+          ← Back to Today
         </button>
         <h1 className="detail__subject">{message.subject || '(no subject)'}</h1>
         <div className="detail__meta">
