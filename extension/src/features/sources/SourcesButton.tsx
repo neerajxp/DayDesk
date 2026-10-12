@@ -19,12 +19,12 @@ export function SourcesButton({ isMailOn, isWhatsAppOn, isOpen, onToggle }: Sour
       className="sources-button"
       aria-expanded={isOpen}
       aria-haspopup="dialog"
-      aria-label={`Sources: ${describe('Mail', isMailOn)}, ${describe('WhatsApp', isWhatsAppOn)}. Open settings.`}
+      aria-label={`Sources: ${describe('Email', isMailOn)}, ${describe('WhatsApp', isWhatsAppOn)}. Open settings.`}
       onClick={onToggle}
     >
       <span className="sources-button__item">
         <span className="source-dot" data-on={isMailOn} aria-hidden="true" />
-        Mail
+        Email
       </span>
       <span className="sources-button__item">
         <span className="source-dot" data-on={isWhatsAppOn} aria-hidden="true" />

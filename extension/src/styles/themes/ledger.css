@@ -1,0 +1,196 @@
+/*
+ * Ledger — Swiss / International.
+ *
+ * White page, black ink, one red that means "deadline". Helvetica, square
+ * corners, heavy section rules, kind labels set as solid blocks. The board
+ * reads like an accounts book: ruled, ranked, no decoration.
+ */
+
+:root[data-style='ledger'] {
+  --surface-page: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2f2f2;
+  --surface-hover: #f6f6f6;
+  --surface-selected: #ececec;
+  --text-primary: #111111;
+  --text-secondary: #474747;
+  --text-tertiary: #8a8a8a;
+  --text-inverted: #ffffff;
+  --accent: #e2231a;
+  --accent-strong: #c41a12;
+  --accent-wash: #fde8e7;
+  --danger: #e2231a;
+  --danger-wash: #fde8e7;
+  --positive: #0a7d36;
+  --rule: #dddddd;
+  --rule-strong: #111111;
+  --kind-pay: #111111;
+  --kind-sign: #111111;
+  --kind-cheque: #111111;
+  --kind-reply: #111111;
+  --kind-deadline: #e2231a;
+  --kind-todo: #6b6b6b;
+  --source-email: #474747;
+  --source-whatsapp: #474747;
+  --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --shadow-raised: none;
+  --shadow-overlay: 0 0 0 1px #111111, 0 10px 28px rgb(0 0 0 / 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-style='ledger']:not([data-theme='light']) {
+    --surface-page: #0b0b0b;
+    --surface-raised: #141414;
+    --surface-sunken: #050505;
+    --surface-hover: #1b1b1b;
+    --surface-selected: #222222;
+    --text-primary: #f2f2f2;
+    --text-secondary: #b5b5b5;
+    --text-tertiary: #7a7a7a;
+    --text-inverted: #0b0b0b;
+    --accent: #ff4136;
+    --accent-strong: #ff6a61;
+    --accent-wash: #3a0f0d;
+    --danger: #ff4136;
+    --danger-wash: #3a0f0d;
+    --positive: #3ecf72;
+    --rule: #2a2a2a;
+    --rule-strong: #f2f2f2;
+    --kind-pay: #f2f2f2;
+    --kind-sign: #f2f2f2;
+    --kind-cheque: #f2f2f2;
+    --kind-reply: #f2f2f2;
+    --kind-deadline: #ff4136;
+    --kind-todo: #9a9a9a;
+    --source-email: #b5b5b5;
+    --source-whatsapp: #b5b5b5;
+    --shadow-overlay: 0 0 0 1px #f2f2f2, 0 10px 28px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-style='ledger'][data-theme='dark'] {
+  --surface-page: #0b0b0b;
+  --surface-raised: #141414;
+  --surface-sunken: #050505;
+  --surface-hover: #1b1b1b;
+  --surface-selected: #222222;
+  --text-primary: #f2f2f2;
+  --text-secondary: #b5b5b5;
+  --text-tertiary: #7a7a7a;
+  --text-inverted: #0b0b0b;
+  --accent: #ff4136;
+  --accent-strong: #ff6a61;
+  --accent-wash: #3a0f0d;
+  --danger: #ff4136;
+  --danger-wash: #3a0f0d;
+  --positive: #3ecf72;
+  --rule: #2a2a2a;
+  --rule-strong: #f2f2f2;
+  --kind-pay: #f2f2f2;
+  --kind-sign: #f2f2f2;
+  --kind-cheque: #f2f2f2;
+  --kind-reply: #f2f2f2;
+  --kind-deadline: #ff4136;
+  --kind-todo: #9a9a9a;
+  --source-email: #b5b5b5;
+  --source-whatsapp: #b5b5b5;
+  --shadow-overlay: 0 0 0 1px #f2f2f2, 0 10px 28px rgb(0 0 0 / 0.6);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+[data-style='ledger'] .masthead__title {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+[data-style='ledger'] .today__weekday {
+  color: var(--text-primary);
+  letter-spacing: 0.2em;
+}
+
+[data-style='ledger'] .today__date {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+[data-style='ledger'] .today__briefing {
+  padding-left: var(--space-sm);
+  border-left: 3px solid var(--accent);
+  font-style: normal;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+/* Sections open with a heavy rule, like a new page of the book. */
+[data-style='ledger'] .bucket__title {
+  margin: 0 var(--space-lg);
+  padding: var(--space-xs) 0;
+  border-top: 3px solid var(--rule-strong);
+  color: var(--text-primary);
+  letter-spacing: 0.16em;
+}
+
+[data-style='ledger'] .bucket[data-bucket='overdue'] .bucket__title {
+  border-top-color: var(--accent);
+}
+
+[data-style='ledger'] .bucket__list {
+  border-top: 1px solid var(--rule-strong);
+  margin: 0 var(--space-lg);
+}
+
+[data-style='ledger'] .task {
+  padding-inline: 0;
+}
+
+[data-style='ledger'] .task::before {
+  display: none;
+}
+
+[data-style='ledger'] .task:hover,
+[data-style='ledger'] .task:focus-within {
+  background: none;
+}
+
+[data-style='ledger'] .task__check {
+  border: 2px solid var(--text-primary);
+  border-radius: 0;
+}
+
+[data-style='ledger'] .task[data-done='true'] .task__check {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+}
+
+/* Kind as a solid block — black for ordinary work, red for deadlines. */
+[data-style='ledger'] .task__kind {
+  padding: 0 0.3rem;
+  background: var(--kind);
+  color: var(--surface-page);
+  letter-spacing: 0.1em;
+}
+
+[data-style='ledger'] .task__title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-style='ledger'] .task__amount {
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+[data-style='ledger'] .task__actions {
+  right: 0;
+}
+
+[data-style='ledger'] .done-hint {
+  border: 1px solid var(--positive);
+  background: none;
+}

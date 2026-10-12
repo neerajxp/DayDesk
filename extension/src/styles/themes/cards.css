@@ -1,0 +1,293 @@
+/*
+ * Cards — Material Design.
+ *
+ * Every task is a raised card on a soft grey field: a kind-coloured strip
+ * along the top, the title as the card headline, the due date as a chip, and
+ * the card's actions always visible in a row along the bottom — the way a
+ * mat-card is built. Roboto, indigo primary, Material elevation.
+ */
+
+:root[data-style='cards'] {
+  --surface-page: #f3f4f9;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e8eaf2;
+  --surface-hover: #f7f8fc;
+  --surface-selected: #e8eaf6;
+  --text-primary: #1b1b1f;
+  --text-secondary: #45464f;
+  --text-tertiary: #767680;
+  --text-inverted: #ffffff;
+  --accent: #3f51b5;
+  --accent-strong: #303f9f;
+  --accent-wash: #e8eaf6;
+  --danger: #d32f2f;
+  --danger-wash: #fdecea;
+  --positive: #2e7d32;
+  --rule: #e0e2ec;
+  --rule-strong: #c4c6d0;
+  --kind-pay: #ef6c00;
+  --kind-sign: #3f51b5;
+  --kind-cheque: #00897b;
+  --kind-reply: #43a047;
+  --kind-deadline: #d32f2f;
+  --kind-todo: #757575;
+  --source-email: #1e88e5;
+  --source-whatsapp: #43a047;
+  --font-display: Roboto, 'Helvetica Neue', system-ui, sans-serif;
+  --font-sans: Roboto, 'Helvetica Neue', system-ui, sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  /* Material elevation, pushed darker so each card clearly lifts off the page. */
+  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.22), 0 6px 16px rgb(0 0 0 / 0.2);
+  --shadow-lifted: 0 4px 8px rgb(0 0 0 / 0.26), 0 12px 28px rgb(0 0 0 / 0.26);
+  --shadow-overlay: 0 4px 8px 3px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-style='cards']:not([data-theme='light']) {
+    --surface-page: #121212;
+    --surface-raised: #1e1e1e;
+    --surface-sunken: #0b0b0b;
+    --surface-hover: #252525;
+    --surface-selected: #2a2d3e;
+    --text-primary: #e3e3e8;
+    --text-secondary: #c4c6d0;
+    --text-tertiary: #8f909a;
+    --text-inverted: #121212;
+    --accent: #9fa8da;
+    --accent-strong: #c5cae9;
+    --accent-wash: #283055;
+    --danger: #ef9a9a;
+    --danger-wash: #3b1f1f;
+    --positive: #81c784;
+    --rule: #2c2c2c;
+    --rule-strong: #3d3d3d;
+    --kind-pay: #ffb74d;
+    --kind-sign: #9fa8da;
+    --kind-cheque: #4db6ac;
+    --kind-reply: #81c784;
+    --kind-deadline: #ef9a9a;
+    --kind-todo: #bdbdbd;
+    --source-email: #64b5f6;
+    --source-whatsapp: #81c784;
+    --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.7), 0 8px 20px rgb(0 0 0 / 0.6);
+    --shadow-lifted: 0 4px 8px rgb(0 0 0 / 0.75), 0 14px 32px rgb(0 0 0 / 0.7);
+    --shadow-overlay: 0 4px 8px 3px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-style='cards'][data-theme='dark'] {
+  --surface-page: #121212;
+  --surface-raised: #1e1e1e;
+  --surface-sunken: #0b0b0b;
+  --surface-hover: #252525;
+  --surface-selected: #2a2d3e;
+  --text-primary: #e3e3e8;
+  --text-secondary: #c4c6d0;
+  --text-tertiary: #8f909a;
+  --text-inverted: #121212;
+  --accent: #9fa8da;
+  --accent-strong: #c5cae9;
+  --accent-wash: #283055;
+  --danger: #ef9a9a;
+  --danger-wash: #3b1f1f;
+  --positive: #81c784;
+  --rule: #2c2c2c;
+  --rule-strong: #3d3d3d;
+  --kind-pay: #ffb74d;
+  --kind-sign: #9fa8da;
+  --kind-cheque: #4db6ac;
+  --kind-reply: #81c784;
+  --kind-deadline: #ef9a9a;
+  --kind-todo: #bdbdbd;
+  --source-email: #64b5f6;
+  --source-whatsapp: #81c784;
+  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.7), 0 8px 20px rgb(0 0 0 / 0.6);
+  --shadow-lifted: 0 4px 8px rgb(0 0 0 / 0.75), 0 14px 32px rgb(0 0 0 / 0.7);
+  --shadow-overlay: 0 4px 8px 3px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.6);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+[data-style='cards'] .today__weekday {
+  color: var(--accent);
+  letter-spacing: 0.15em;
+}
+
+[data-style='cards'] .today__date {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+[data-style='cards'] .today__briefing {
+  font-style: normal;
+  font-size: var(--text-sm);
+}
+
+/* The add button becomes a small FAB. */
+[data-style='cards'] .add-button {
+  border: 0;
+  background: var(--accent);
+  color: var(--text-inverted);
+  box-shadow: var(--shadow-raised);
+}
+
+[data-style='cards'] .add-button:hover,
+[data-style='cards'] .add-button[aria-expanded='true'] {
+  background: var(--accent-strong);
+  color: var(--text-inverted);
+  box-shadow: var(--shadow-lifted);
+}
+
+/* ── Sections: Material subheaders ──────────────────────────────────────── */
+
+[data-style='cards'] .bucket {
+  margin-top: var(--space-xl);
+}
+
+[data-style='cards'] .bucket__title {
+  padding-bottom: var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--accent-strong);
+}
+
+[data-style='cards'] .bucket[data-bucket='overdue'] .bucket__title {
+  color: var(--danger);
+}
+
+[data-style='cards'] .bucket__list {
+  display: grid;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  border: 0;
+}
+
+/* ── The card ───────────────────────────────────────────────────────────── */
+
+[data-style='cards'] .task {
+  overflow: hidden;
+  padding: calc(var(--space-md) + 4px) var(--space-lg) var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-raised);
+  transition:
+    box-shadow var(--duration-normal) var(--ease-out-expo),
+    transform var(--duration-normal) var(--ease-out-expo);
+}
+
+[data-style='cards'] .task:hover,
+[data-style='cards'] .task:focus-within {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-lifted);
+  transform: translateY(-1px);
+}
+
+/* The kind strip across the top of the card. */
+[data-style='cards'] .task::before {
+  inset: 0 0 auto 0;
+  width: auto;
+  height: 4px;
+  border-radius: 0;
+}
+
+[data-style='cards'] .task__check {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.15rem;
+  border: 2px solid var(--text-secondary);
+  border-radius: 2px;
+  background: transparent;
+}
+
+[data-style='cards'] .task__check:hover {
+  border-color: var(--accent);
+}
+
+[data-style='cards'] .task[data-done='true'] .task__check {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+[data-style='cards'] .task__kind {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+/* Due date as a chip. */
+[data-style='cards'] .task__due {
+  padding: 0.05rem 0.5rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+[data-style='cards'] .task__due[data-overdue='true'] {
+  background: var(--danger-wash);
+}
+
+[data-style='cards'] .task__title {
+  font-size: var(--text-md);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+[data-style='cards'] .source-badge {
+  border-radius: var(--radius-md);
+}
+
+[data-style='cards'] .done-hint {
+  border: 0;
+  border-radius: var(--radius-md);
+}
+
+[data-style='cards'] .done-hint__confirm {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Card actions: always shown, in a row along the bottom, as Material does. */
+[data-style='cards'] .task__actions {
+  position: static;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: var(--space-sm) calc(var(--space-sm) * -1) 0;
+  padding: var(--space-xs) 0 0;
+  border-top: 1px solid var(--rule);
+  background: none;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+[data-style='cards'] .task__action {
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: background var(--duration-fast) var(--ease-out-expo);
+}
+
+[data-style='cards'] .task__action:hover {
+  background: var(--accent-wash);
+  text-decoration: none;
+}
+
+[data-style='cards'] .task__action--quiet {
+  margin-left: auto;
+  color: var(--text-tertiary);
+}
+
+[data-style='cards'] .task[data-done='true'] {
+  box-shadow: none;
+  background: transparent;
+  outline: 1px solid var(--rule);
+}

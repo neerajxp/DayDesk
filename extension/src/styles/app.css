@@ -1,4 +1,10 @@
 @import './tokens.css';
+/* Styles: each overrides the tokens (both palettes) and a few layout rules. */
+@import './themes/ledger.css';
+@import './themes/notebook.css';
+@import './themes/terminal.css';
+@import './themes/bento.css';
+@import './themes/cards.css';
 
 *,
 *::before,

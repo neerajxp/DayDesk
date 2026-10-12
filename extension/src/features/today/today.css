@@ -610,6 +610,12 @@
   color: var(--text-secondary);
 }
 
+/* "Follow-up" / "Says done" never break mid-word; the name shrinks first. */
+.trail__relation {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .trail__relation::before {
   content: '·';
   margin-right: var(--space-xs);

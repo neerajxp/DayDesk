@@ -1,17 +1,30 @@
 /**
- * Day / Night switch in the header: a sun or moon showing the theme in effect,
- * opening a three-way choice — Auto (follow the Mac), Day, Night.
+ * Appearance menu in the header. The button is a sun or moon for the mode in
+ * effect; the menu sets the mode (Auto / Day / Night) and the style — a whole
+ * look for the board, each with its own day and night palette.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { setPreference, useTheme, type ThemePreference } from '../../lib/theme.js';
+import { setStyle, STYLES, useStyle, type StyleInfo } from '../../lib/style.js';
 import './theme.css';
 
-const OPTIONS: readonly { value: ThemePreference; label: string; detail: string }[] = [
+const MODES: readonly { value: ThemePreference; label: string; detail: string }[] = [
   { value: 'auto', label: 'Auto', detail: 'Match your Mac' },
-  { value: 'light', label: 'Day', detail: 'Warm paper' },
-  { value: 'dark', label: 'Night', detail: 'Deep ink' },
+  { value: 'light', label: 'Day', detail: 'Always light' },
+  { value: 'dark', label: 'Night', detail: 'Always dark' },
 ];
+
+/** A thumbnail of the style: its paper, ink, accent and display face. */
+function StyleSwatch({ style }: { style: StyleInfo }) {
+  const { paper, ink, accent, font } = style.swatch;
+  return (
+    <span className="style-swatch" style={{ background: paper, color: ink, fontFamily: font }} aria-hidden="true">
+      <span className="style-swatch__rail" style={{ background: accent }} />
+      Aa
+    </span>
+  );
+}
 
 function SunIcon() {
   return (
@@ -32,6 +45,7 @@ function MoonIcon() {
 
 export function ThemeMenu() {
   const { preference, theme } = useTheme();
+  const style = useStyle();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -52,11 +66,6 @@ export function ThemeMenu() {
     };
   }, [isOpen]);
 
-  const choose = (value: ThemePreference): void => {
-    setPreference(value);
-    setIsOpen(false);
-  };
-
   return (
     <div className="theme-menu" ref={rootRef}>
       <button
@@ -64,8 +73,10 @@ export function ThemeMenu() {
         className="theme-menu__button"
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label={`Theme: ${OPTIONS.find((option) => option.value === preference)?.label}. Change theme.`}
-        title="Day / Night"
+        aria-label={`Appearance: ${MODES.find((mode) => mode.value === preference)?.label}, ${
+          STYLES.find((item) => item.id === style)?.name
+        } style. Change appearance.`}
+        title="Appearance"
         onClick={() => setIsOpen(!isOpen)}
       >
         {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
@@ -73,20 +84,45 @@ export function ThemeMenu() {
       </button>
 
       {isOpen && (
-        <div className="theme-menu__list" role="menu" aria-label="Theme">
-          {OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="menuitemradio"
-              aria-checked={preference === option.value}
-              className="theme-menu__option"
-              onClick={() => choose(option.value)}
-            >
-              <span className="theme-menu__label">{option.label}</span>
-              <span className="theme-menu__detail">{option.detail}</span>
-            </button>
-          ))}
+        <div className="theme-menu__list" role="menu" aria-label="Appearance">
+          <p className="theme-menu__heading" id="appearance-mode">
+            Mode
+          </p>
+          <div className="mode-switch" role="group" aria-labelledby="appearance-mode">
+            {MODES.map((mode) => (
+              <button
+                key={mode.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={preference === mode.value}
+                title={mode.detail}
+                className="mode-switch__option"
+                onClick={() => setPreference(mode.value)}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="theme-menu__heading" id="appearance-style">
+            Style
+          </p>
+          <div role="group" aria-labelledby="appearance-style">
+            {STYLES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitemradio"
+                aria-checked={style === item.id}
+                className="theme-menu__option"
+                onClick={() => setStyle(item.id)}
+              >
+                <StyleSwatch style={item} />
+                <span className="theme-menu__label">{item.name}</span>
+                <span className="theme-menu__detail">{item.description}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

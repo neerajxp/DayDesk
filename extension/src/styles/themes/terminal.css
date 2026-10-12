@@ -1,0 +1,220 @@
+/*
+ * Terminal — the board as a console session.
+ *
+ * Everything in monospace. Checkboxes are literal [ ] and [x], sections are
+ * "## HEADINGS", kinds read "PAY:", the briefing is a "> " line. By day it is
+ * ink on printout paper; by night, phosphor green on black with a faint glow.
+ */
+
+:root[data-style='terminal'] {
+  --surface-page: #f5f3ea;
+  --surface-raised: #fbfaf4;
+  --surface-sunken: #ebe8da;
+  --surface-hover: #efede1;
+  --surface-selected: #e4e0cc;
+  --text-primary: #1d2b1f;
+  --text-secondary: #3f5243;
+  --text-tertiary: #7c8a7e;
+  --text-inverted: #f5f3ea;
+  --accent: #9a6700;
+  --accent-strong: #7d5400;
+  --accent-wash: #f3e6c4;
+  --danger: #b42318;
+  --danger-wash: #f8e1de;
+  --positive: #1a7f37;
+  --rule: #d8d4c0;
+  --rule-strong: #b9b39a;
+  --kind-pay: #9a6700;
+  --kind-sign: #0550ae;
+  --kind-cheque: #1a7f37;
+  --kind-reply: #8250df;
+  --kind-deadline: #b42318;
+  --kind-todo: #57606a;
+  --source-email: #0550ae;
+  --source-whatsapp: #1a7f37;
+  --font-display: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-sans: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --radius-sm: 0;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --shadow-raised: none;
+  --glow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-style='terminal']:not([data-theme='light']) {
+    --surface-page: #0d1117;
+    --surface-raised: #121821;
+    --surface-sunken: #090c10;
+    --surface-hover: #161d27;
+    --surface-selected: #1b2430;
+    --text-primary: #7ee787;
+    --text-secondary: #5fb96a;
+    --text-tertiary: #3f7d48;
+    --text-inverted: #0d1117;
+    --accent: #e3b341;
+    --accent-strong: #f2cc60;
+    --accent-wash: #2d2410;
+    --danger: #ff7b72;
+    --danger-wash: #3a1614;
+    --positive: #7ee787;
+    --rule: #1f2a22;
+    --rule-strong: #2f4a35;
+    --kind-pay: #e3b341;
+    --kind-sign: #79c0ff;
+    --kind-cheque: #56d4dd;
+    --kind-reply: #d2a8ff;
+    --kind-deadline: #ff7b72;
+    --kind-todo: #8b949e;
+    --source-email: #79c0ff;
+    --source-whatsapp: #7ee787;
+    --glow: 0 0 6px rgb(126 231 135 / 0.35);
+  }
+}
+
+:root[data-style='terminal'][data-theme='dark'] {
+  --surface-page: #0d1117;
+  --surface-raised: #121821;
+  --surface-sunken: #090c10;
+  --surface-hover: #161d27;
+  --surface-selected: #1b2430;
+  --text-primary: #7ee787;
+  --text-secondary: #5fb96a;
+  --text-tertiary: #3f7d48;
+  --text-inverted: #0d1117;
+  --accent: #e3b341;
+  --accent-strong: #f2cc60;
+  --accent-wash: #2d2410;
+  --danger: #ff7b72;
+  --danger-wash: #3a1614;
+  --positive: #7ee787;
+  --rule: #1f2a22;
+  --rule-strong: #2f4a35;
+  --kind-pay: #e3b341;
+  --kind-sign: #79c0ff;
+  --kind-cheque: #56d4dd;
+  --kind-reply: #d2a8ff;
+  --kind-deadline: #ff7b72;
+  --kind-todo: #8b949e;
+  --source-email: #79c0ff;
+  --source-whatsapp: #7ee787;
+  --glow: 0 0 6px rgb(126 231 135 / 0.35);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+[data-style='terminal'] body {
+  font-size: 0.8125rem;
+}
+
+[data-style='terminal'] .today__weekday::before {
+  content: '// ';
+  color: var(--text-tertiary);
+}
+
+[data-style='terminal'] .today__date {
+  font-size: 1.625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-shadow: var(--glow);
+}
+
+[data-style='terminal'] .today__briefing {
+  font-style: normal;
+  font-size: var(--text-sm);
+}
+
+[data-style='terminal'] .today__briefing::before {
+  content: '> ';
+  color: var(--accent);
+}
+
+[data-style='terminal'] .bucket__title::before {
+  content: '## ';
+  color: var(--accent);
+}
+
+[data-style='terminal'] .bucket__list {
+  border-top: 1px dashed var(--rule-strong);
+}
+
+[data-style='terminal'] .task {
+  border-bottom: 1px dashed var(--rule);
+}
+
+[data-style='terminal'] .task::before {
+  display: none;
+}
+
+/* The checkbox is the text itself: [ ] then [x]. */
+[data-style='terminal'] .task__check {
+  align-self: start;
+  width: auto;
+  height: auto;
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: 1.3;
+  color: var(--text-secondary);
+}
+
+[data-style='terminal'] .task__check::before {
+  content: '[ ]';
+}
+
+[data-style='terminal'] .task__check:hover {
+  color: var(--kind);
+}
+
+[data-style='terminal'] .task__check svg {
+  display: none;
+}
+
+[data-style='terminal'] .task[data-done='true'] .task__check {
+  background: none;
+  color: var(--positive);
+}
+
+[data-style='terminal'] .task[data-done='true'] .task__check::before {
+  content: '[x]';
+}
+
+[data-style='terminal'] .task__kind {
+  letter-spacing: 0;
+}
+
+[data-style='terminal'] .task__kind::after {
+  content: ':';
+}
+
+[data-style='terminal'] .task__title {
+  font-size: var(--text-base);
+  font-weight: 500;
+  text-shadow: var(--glow);
+}
+
+[data-style='terminal'] .source-badge {
+  padding: 0;
+  border: 0;
+}
+
+[data-style='terminal'] .source-badge::before {
+  content: '[';
+}
+
+[data-style='terminal'] .source-badge::after {
+  content: ']';
+}
+
+[data-style='terminal'] .done-hint {
+  border-style: dashed;
+}
+
+[data-style='terminal'] .add-button,
+[data-style='terminal'] .task__check {
+  border-radius: 0;
+}

@@ -1,0 +1,202 @@
+/*
+ * Bento — rounded cards on a soft field.
+ *
+ * Each task floats as its own card, tinted with its kind's colour; sections
+ * are pills; everything is rounded, including the type. The most "app"-like
+ * of the styles, for people who want their list to feel light and friendly.
+ */
+
+:root[data-style='bento'] {
+  --surface-page: #f3f1fb;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e9e6f7;
+  --surface-hover: #faf9ff;
+  --surface-selected: #ebe7ff;
+  --text-primary: #262340;
+  --text-secondary: #5a5677;
+  --text-tertiary: #9692b0;
+  --text-inverted: #ffffff;
+  --accent: #7c6cf0;
+  --accent-strong: #6152e0;
+  --accent-wash: #ece9ff;
+  --danger: #e5484d;
+  --danger-wash: #fdecec;
+  --positive: #30a46c;
+  --rule: #e4e0f5;
+  --rule-strong: #cfc9ee;
+  --kind-pay: #e0910b;
+  --kind-sign: #7c6cf0;
+  --kind-cheque: #12a594;
+  --kind-reply: #30a46c;
+  --kind-deadline: #e5484d;
+  --kind-todo: #8e8aa8;
+  --source-email: #3e63dd;
+  --source-whatsapp: #30a46c;
+  --font-display: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  --font-sans: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-raised: 0 1px 2px rgb(38 35 64 / 0.06), 0 6px 18px rgb(38 35 64 / 0.08);
+  --shadow-overlay: 0 12px 40px rgb(38 35 64 / 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-style='bento']:not([data-theme='light']) {
+    --surface-page: #15131f;
+    --surface-raised: #1e1b2c;
+    --surface-sunken: #100e18;
+    --surface-hover: #24203a;
+    --surface-selected: #2c2747;
+    --text-primary: #ecebf7;
+    --text-secondary: #b1adc9;
+    --text-tertiary: #77739a;
+    --text-inverted: #15131f;
+    --accent: #9d90ff;
+    --accent-strong: #b7adff;
+    --accent-wash: #2b2550;
+    --danger: #ff6369;
+    --danger-wash: #3a1d24;
+    --positive: #4cc38a;
+    --rule: #2a2640;
+    --rule-strong: #3b3560;
+    --kind-pay: #ffc53d;
+    --kind-sign: #9d90ff;
+    --kind-cheque: #2ec8b5;
+    --kind-reply: #4cc38a;
+    --kind-deadline: #ff6369;
+    --kind-todo: #a5a1c4;
+    --source-email: #849dff;
+    --source-whatsapp: #4cc38a;
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
+    --shadow-overlay: 0 12px 40px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-style='bento'][data-theme='dark'] {
+  --surface-page: #15131f;
+  --surface-raised: #1e1b2c;
+  --surface-sunken: #100e18;
+  --surface-hover: #24203a;
+  --surface-selected: #2c2747;
+  --text-primary: #ecebf7;
+  --text-secondary: #b1adc9;
+  --text-tertiary: #77739a;
+  --text-inverted: #15131f;
+  --accent: #9d90ff;
+  --accent-strong: #b7adff;
+  --accent-wash: #2b2550;
+  --danger: #ff6369;
+  --danger-wash: #3a1d24;
+  --positive: #4cc38a;
+  --rule: #2a2640;
+  --rule-strong: #3b3560;
+  --kind-pay: #ffc53d;
+  --kind-sign: #9d90ff;
+  --kind-cheque: #2ec8b5;
+  --kind-reply: #4cc38a;
+  --kind-deadline: #ff6369;
+  --kind-todo: #a5a1c4;
+  --source-email: #849dff;
+  --source-whatsapp: #4cc38a;
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
+  --shadow-overlay: 0 12px 40px rgb(0 0 0 / 0.6);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+[data-style='bento'] .today__date {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+[data-style='bento'] .today__weekday {
+  color: var(--accent-strong);
+}
+
+[data-style='bento'] .today__briefing {
+  font-style: normal;
+  font-size: var(--text-sm);
+}
+
+/* Sections as pills. */
+[data-style='bento'] .bucket__title {
+  display: inline-flex;
+  margin: 0 0 var(--space-sm) var(--space-md);
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-raised);
+  letter-spacing: 0.06em;
+}
+
+[data-style='bento'] .bucket[data-bucket='overdue'] .bucket__title {
+  background: var(--danger-wash);
+}
+
+[data-style='bento'] .bucket__list {
+  display: grid;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+  border: 0;
+}
+
+/* Each task a card, tinted with its kind. */
+[data-style='bento'] .task {
+  --card: color-mix(in oklch, var(--kind) 9%, var(--surface-raised));
+  padding: var(--space-md);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-raised);
+  transition:
+    transform var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+[data-style='bento'] .task::before {
+  display: none;
+}
+
+[data-style='bento'] .task:hover,
+[data-style='bento'] .task:focus-within {
+  background: var(--card);
+  transform: translateY(-1px);
+}
+
+[data-style='bento'] .task[data-done='true'] {
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+[data-style='bento'] .task__check {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--kind);
+}
+
+[data-style='bento'] .task__kind {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--kind) 16%, transparent);
+  letter-spacing: 0.04em;
+}
+
+[data-style='bento'] .task__title {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+[data-style='bento'] .source-badge {
+  border-radius: 999px;
+  padding: 0 0.45em;
+}
+
+[data-style='bento'] .task__actions {
+  right: var(--space-md);
+  background: linear-gradient(to right, transparent, var(--card) var(--space-md));
+}
+
+[data-style='bento'] .bucket[data-bucket='done'] .task {
+  padding-block: var(--space-sm);
+}

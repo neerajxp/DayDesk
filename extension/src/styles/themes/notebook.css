@@ -1,0 +1,219 @@
+/*
+ * Notebook — a school notebook by day, a chalkboard by night.
+ *
+ * Lined paper with a red margin, tasks written on the lines in a handwriting
+ * face, a hand-drawn box to tick, and a red-pen strike for done. The board
+ * stops looking like software and starts looking like the list you'd keep.
+ */
+
+:root[data-style='notebook'] {
+  --surface-page: #fbf7e9;
+  --surface-raised: #fffdf4;
+  --surface-sunken: #f1ead2;
+  --surface-hover: #f6f0dc;
+  --surface-selected: #efe6c9;
+  --text-primary: #1f3a8a;
+  --text-secondary: #4a5f9e;
+  --text-tertiary: #8a96b8;
+  --text-inverted: #fffdf4;
+  --accent: #d9534f;
+  --accent-strong: #b8322e;
+  --accent-wash: #f9e0dd;
+  --danger: #c62828;
+  --danger-wash: #fbe3e3;
+  --positive: #2e7d32;
+  --rule: #c9d6ee;
+  --rule-strong: #9fb3dc;
+  --kind-pay: #b8322e;
+  --kind-sign: #1f3a8a;
+  --kind-cheque: #00695c;
+  --kind-reply: #2e7d32;
+  --kind-deadline: #c62828;
+  --kind-todo: #4a5f9e;
+  --source-email: #1f3a8a;
+  --source-whatsapp: #2e7d32;
+  --font-display: Noteworthy, 'Bradley Hand', 'Segoe Print', 'Comic Sans MS', cursive;
+  --font-sans: 'Avenir Next', Avenir, system-ui, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --line: 1.75rem;
+  --margin-line: 1.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-style='notebook']:not([data-theme='light']) {
+    --surface-page: #1f2a24;
+    --surface-raised: #25322b;
+    --surface-sunken: #18211c;
+    --surface-hover: #2b3a32;
+    --surface-selected: #33443b;
+    --text-primary: #f1f1e6;
+    --text-secondary: #c9cfc0;
+    --text-tertiary: #8e9a8c;
+    --text-inverted: #1f2a24;
+    --accent: #ffb4a2;
+    --accent-strong: #ffc9bb;
+    --accent-wash: #4a3a35;
+    --danger: #ff8a80;
+    --danger-wash: #4a2c2a;
+    --positive: #a5d6a7;
+    --rule: #34463c;
+    --rule-strong: #556b5d;
+    --kind-pay: #ffcc80;
+    --kind-sign: #90caf9;
+    --kind-cheque: #80cbc4;
+    --kind-reply: #a5d6a7;
+    --kind-deadline: #ff8a80;
+    --kind-todo: #e0e0d0;
+    --source-email: #90caf9;
+    --source-whatsapp: #a5d6a7;
+  }
+}
+
+:root[data-style='notebook'][data-theme='dark'] {
+  --surface-page: #1f2a24;
+  --surface-raised: #25322b;
+  --surface-sunken: #18211c;
+  --surface-hover: #2b3a32;
+  --surface-selected: #33443b;
+  --text-primary: #f1f1e6;
+  --text-secondary: #c9cfc0;
+  --text-tertiary: #8e9a8c;
+  --text-inverted: #1f2a24;
+  --accent: #ffb4a2;
+  --accent-strong: #ffc9bb;
+  --accent-wash: #4a3a35;
+  --danger: #ff8a80;
+  --danger-wash: #4a2c2a;
+  --positive: #a5d6a7;
+  --rule: #34463c;
+  --rule-strong: #556b5d;
+  --kind-pay: #ffcc80;
+  --kind-sign: #90caf9;
+  --kind-cheque: #80cbc4;
+  --kind-reply: #a5d6a7;
+  --kind-deadline: #ff8a80;
+  --kind-todo: #e0e0d0;
+  --source-email: #90caf9;
+  --source-whatsapp: #a5d6a7;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+/* The page itself: ruled lines, and a red margin the list hangs off. */
+[data-style='notebook'] .today {
+  background-color: var(--surface-page);
+  background-image:
+    linear-gradient(
+      to right,
+      transparent var(--margin-line),
+      var(--accent) var(--margin-line),
+      var(--accent) calc(var(--margin-line) + 1px),
+      transparent calc(var(--margin-line) + 1px)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--line) - 1px),
+      var(--rule) calc(var(--line) - 1px),
+      var(--rule) var(--line)
+    );
+  background-attachment: local;
+}
+
+[data-style='notebook'] .today__header,
+[data-style='notebook'] .bucket__title,
+[data-style='notebook'] .task,
+[data-style='notebook'] .quick-add {
+  padding-left: calc(var(--margin-line) + var(--space-md));
+}
+
+[data-style='notebook'] .quick-add {
+  margin-left: 0;
+}
+
+[data-style='notebook'] .today__weekday {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent-strong);
+}
+
+[data-style='notebook'] .today__date {
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+[data-style='notebook'] .today__briefing {
+  font-family: var(--font-display);
+  font-style: normal;
+}
+
+[data-style='notebook'] .bucket__title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-primary);
+  text-decoration: underline wavy var(--accent);
+  text-underline-offset: 4px;
+}
+
+[data-style='notebook'] .bucket__list,
+[data-style='notebook'] .task {
+  border: 0;
+}
+
+[data-style='notebook'] .task::before {
+  display: none;
+}
+
+[data-style='notebook'] .task:hover,
+[data-style='notebook'] .task:focus-within {
+  background: color-mix(in oklch, var(--rule) 30%, transparent);
+}
+
+/* A box drawn by hand: square-ish, slightly off true. */
+[data-style='notebook'] .task__check {
+  border: 2px solid var(--text-primary);
+  border-radius: 3px 5px 2px 6px;
+  background: transparent;
+  transform: rotate(-4deg);
+}
+
+[data-style='notebook'] .task[data-done='true'] .task__check {
+  border-color: var(--accent);
+  background: transparent;
+}
+
+[data-style='notebook'] .task[data-done='true'] .task__check svg {
+  stroke: var(--accent);
+}
+
+[data-style='notebook'] .task__kind {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='notebook'] .task__title {
+  font-size: 1.15rem;
+  font-weight: 400;
+}
+
+/* Done is crossed out in red pen, not grey ink. */
+[data-style='notebook'] .task[data-done='true'] .task__title {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 100% 2px;
+}
+
+[data-style='notebook'] .task__actions {
+  background: none;
+}
