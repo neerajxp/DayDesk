@@ -110,17 +110,17 @@
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
 
-[data-style='cards'] .today__weekday {
+[data-style='cards'] .today__overline {
   color: var(--accent);
   letter-spacing: 0.15em;
 }
 
-[data-style='cards'] .today__date {
+[data-style='cards'] .today__headline {
   font-weight: 400;
   letter-spacing: -0.01em;
 }
 
-[data-style='cards'] .today__briefing {
+[data-style='cards'] .today__week {
   font-style: normal;
   font-size: var(--text-sm);
 }

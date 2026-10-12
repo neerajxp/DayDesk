@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DayDeskApi } from '../../lib/api/client.js';
 import type { MessageDetail, RelatedItem, Task, TaskPatch } from '../../lib/api/types.js';
-import { addDays, briefing, BUCKET_LABELS, BUCKET_ORDER, groupTasks, toDateKey } from '../../lib/tasks.js';
+import { addDays, BUCKET_LABELS, BUCKET_ORDER, daySummary, groupTasks, toDateKey } from '../../lib/tasks.js';
 import { MessageView } from '../mail/MessageView.js';
 import { AddButton, QuickAdd } from './QuickAdd.js';
 import { TaskRow } from './TaskRow.js';
@@ -141,6 +141,18 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   // Undo simply reopens it.
   const dismiss = useCallback(
     (task: Task) => {
+      // Ticked a moment ago and still settling? Cancel the pending "done", or it
+      // would land after the delete and bring the task back.
+      const pending = settleTimers.current.get(task.id);
+      if (pending) {
+        clearTimeout(pending);
+        settleTimers.current.delete(task.id);
+        setSettling((current) => {
+          const next = new Set(current);
+          next.delete(task.id);
+          return next;
+        });
+      }
       void patchTask(task, { status: 'dismissed' }, null);
       offerUndo(`Deleted “${task.title}”`, async () => {
         try {
@@ -205,7 +217,7 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   );
 
   const groups = useMemo(() => groupTasks(tasks, todayKey), [tasks, todayKey]);
-  const summary = useMemo(() => briefing(tasks, todayKey), [tasks, todayKey]);
+  const summary = useMemo(() => daySummary(tasks, todayKey), [tasks, todayKey]);
 
   if (openMessage) {
     return <MessageView message={openMessage} onBack={() => setOpenMessage(null)} />;
@@ -213,15 +225,26 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
 
   return (
     <div className="scroller today">
+      {/* The date is a quiet label; the loud line is what needs you today. */}
       <header className="today__header">
+        <p className="today__overline">
+          {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+        </p>
         <div className="today__dateline">
-          <div>
-            <p className="today__weekday">{now.toLocaleDateString(undefined, { weekday: 'long' })}</p>
-            <h2 className="today__date">{now.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</h2>
-          </div>
+          <h2 className="today__headline" data-tone={isLoading ? undefined : summary.tone}>
+            {isLoading ? '\u00a0' : summary.headline}
+            {!isLoading && summary.overdueChip > 0 && (
+              <span className="today__overdue">{summary.overdueChip} overdue</span>
+            )}
+          </h2>
           <AddButton isOpen={isAdding} onOpen={() => setIsAdding(true)} />
         </div>
-        <p className="today__briefing">{isLoading ? '\u00a0' : summary}</p>
+        {!isLoading && summary.detail && (
+          <p className="today__week">
+            <span className="today__week-label">{summary.detail.label}</span>
+            {summary.detail.text}
+          </p>
+        )}
       </header>
 
       {isAdding && <QuickAdd onAdd={add} onClose={() => setIsAdding(false)} />}

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { Task } from './api/types.js';
 import {
-  briefing,
+  daySummary,
   bucketOf,
   doneHintOf,
   dueLabel,
@@ -69,23 +69,57 @@ describe('dueLabel', () => {
   });
 });
 
-describe('briefing', () => {
-  test('summarises the week by kind', () => {
-    const text = briefing(
-      [
-        task({ kind: 'pay', dueDate: '2026-10-09' }),
-        task({ kind: 'pay', dueDate: '2026-10-12' }),
-        task({ kind: 'sign', dueDate: '2026-10-10' }),
-        task({ kind: 'todo', dueDate: '2026-12-01' }),
-      ],
-      TODAY,
-    );
-    expect(text).toBe('2 bills to pay · 1 to sign this week.');
+describe('daySummary', () => {
+  test('leads with what is due today, flagging anything overdue beside it', () => {
+    expect(
+      daySummary(
+        [
+          task({ kind: 'pay', dueDate: '2026-10-09' }),
+          task({ kind: 'pay', dueDate: '2026-10-10' }),
+          task({ kind: 'sign', dueDate: '2026-10-10' }),
+          task({ kind: 'todo', dueDate: '2026-12-01' }),
+        ],
+        TODAY,
+      ),
+    ).toEqual({
+      headline: '2 due today',
+      overdueChip: 1,
+      tone: 'due',
+      detail: { label: 'This week', text: '2 bills to pay · 1 to sign' },
+    });
   });
 
-  test('distinguishes a clear desk from a quiet week', () => {
-    expect(briefing([], TODAY)).toBe('Your desk is clear.');
-    expect(briefing([task({ dueDate: '2026-12-01' })], TODAY)).toBe('Nothing due this week.');
+  test('when nothing is due today, overdue work takes the headline', () => {
+    expect(daySummary([task({ dueDate: '2026-10-08' }), task({ dueDate: '2026-10-09' })], TODAY)).toMatchObject({
+      headline: '2 overdue',
+      overdueChip: 0,
+      tone: 'overdue',
+    });
+  });
+
+  test('a clear today still mentions what this week holds', () => {
+    expect(daySummary([task({ kind: 'reply', dueDate: '2026-10-12' })], TODAY)).toEqual({
+      headline: 'Nothing due today',
+      overdueChip: 0,
+      tone: 'clear',
+      detail: { label: 'This week', text: '1 reply owed' },
+    });
+  });
+
+  test('an open task with no date (or a later one) is acknowledged, not ignored', () => {
+    expect(daySummary([task({ kind: 'pay', dueDate: null })], TODAY)).toEqual({
+      headline: 'Nothing due today',
+      overdueChip: 0,
+      tone: 'clear',
+      detail: { label: 'Still open', text: '1 bill to pay' },
+    });
+    expect(daySummary([task({ dueDate: '2026-12-01' })], TODAY).detail).toEqual({ label: 'Still open', text: '1 to-do' });
+  });
+
+  test('says so when nothing at all is open — including once the last task is ticked', () => {
+    const empty = { headline: 'Your desk is clear', overdueChip: 0, tone: 'clear', detail: null };
+    expect(daySummary([], TODAY)).toEqual(empty);
+    expect(daySummary([task({ dueDate: null, status: 'done' })], TODAY)).toEqual(empty);
   });
 });
 

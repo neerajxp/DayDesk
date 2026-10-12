@@ -134,7 +134,7 @@
   margin-left: 0;
 }
 
-[data-style='notebook'] .today__weekday {
+[data-style='notebook'] .today__overline {
   font-family: var(--font-display);
   font-size: var(--text-sm);
   letter-spacing: 0;
@@ -142,13 +142,13 @@
   color: var(--accent-strong);
 }
 
-[data-style='notebook'] .today__date {
+[data-style='notebook'] .today__headline {
   font-size: 2.25rem;
   font-weight: 400;
   letter-spacing: 0;
 }
 
-[data-style='notebook'] .today__briefing {
+[data-style='notebook'] .today__week {
   font-family: var(--font-display);
   font-style: normal;
 }

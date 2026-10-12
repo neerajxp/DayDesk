@@ -84,35 +84,67 @@ export function dueLabel(dueDate: string | null, todayKey: string): string | nul
 }
 
 /**
- * The one-line briefing under the date: what kind of work is waiting, not
- * just how much. Only counts what is due by the end of the week, so a
- * renewal next March does not inflate today's sense of load.
+ * What the header says, most important first.
+ *
+ * The headline answers "what needs me today?" — due-today count, or overdue
+ * count when nothing is due today, or a calm "nothing due" when clear. The
+ * week line says what kind of work the next seven days hold. The date itself
+ * is a quiet label above: it is obvious, so it should not be the loudest
+ * thing on the board.
  */
-export function briefing(tasks: readonly Task[], todayKey: string): string {
-  const pressing = tasks.filter((task) => {
-    const bucket = bucketOf(task, todayKey);
-    return bucket === 'overdue' || bucket === 'today' || bucket === 'week';
-  });
-  if (pressing.length === 0) {
-    return tasks.some((task) => task.status === 'open') ? 'Nothing due this week.' : 'Your desk is clear.';
+export interface DaySummary {
+  readonly headline: string;
+  /** Overdue count shown as a chip beside a due-today headline (0 = no chip). */
+  readonly overdueChip: number;
+  readonly tone: 'clear' | 'due' | 'overdue';
+  /**
+   * The line under the headline: what kind of work the week holds, or — when
+   * nothing is dated this week — what is still open with no date or a later
+   * one. Null only when nothing at all is open.
+   */
+  readonly detail: { readonly label: string; readonly text: string } | null;
+}
+
+const KIND_PHRASES: Record<TaskKind, (n: number) => string> = {
+  pay: (n) => `${n} ${n === 1 ? 'bill' : 'bills'} to pay`,
+  sign: (n) => `${n} to sign`,
+  cheque: (n) => `${n} ${n === 1 ? 'cheque' : 'cheques'}`,
+  reply: (n) => `${n} ${n === 1 ? 'reply' : 'replies'} owed`,
+  deadline: (n) => `${n} ${n === 1 ? 'deadline' : 'deadlines'}`,
+  todo: (n) => `${n} ${n === 1 ? 'to-do' : 'to-dos'}`,
+};
+const KIND_ORDER: readonly TaskKind[] = ['pay', 'sign', 'cheque', 'reply', 'deadline', 'todo'];
+
+/** "2 bills to pay · 1 to sign" for a set of tasks. */
+function describeKinds(tasks: readonly Task[]): string {
+  const kinds = new Map<TaskKind, number>();
+  for (const task of tasks) kinds.set(task.kind, (kinds.get(task.kind) ?? 0) + 1);
+  return KIND_ORDER.filter((kind) => kinds.has(kind))
+    .map((kind) => KIND_PHRASES[kind](kinds.get(kind)!))
+    .join(' · ');
+}
+
+export function daySummary(tasks: readonly Task[], todayKey: string): DaySummary {
+  const byBucket = groupTasks(tasks, todayKey);
+  const count = (bucket: Bucket): number => byBucket.get(bucket)?.length ?? 0;
+  const pressing = [...(byBucket.get('overdue') ?? []), ...(byBucket.get('today') ?? []), ...(byBucket.get('week') ?? [])];
+  const undatedOrLater = [...(byBucket.get('later') ?? []), ...(byBucket.get('whenever') ?? [])];
+
+  const detail =
+    pressing.length > 0
+      ? { label: 'This week', text: describeKinds(pressing) }
+      : undatedOrLater.length > 0
+        ? { label: 'Still open', text: describeKinds(undatedOrLater) }
+        : null;
+
+  if (count('today') > 0) {
+    return { headline: `${count('today')} due today`, overdueChip: count('overdue'), tone: 'due', detail };
   }
-
-  const counts = new Map<TaskKind, number>();
-  for (const task of pressing) counts.set(task.kind, (counts.get(task.kind) ?? 0) + 1);
-
-  const phrases: Record<TaskKind, (n: number) => string> = {
-    pay: (n) => `${n} ${n === 1 ? 'bill' : 'bills'} to pay`,
-    sign: (n) => `${n} to sign`,
-    cheque: (n) => `${n} ${n === 1 ? 'cheque' : 'cheques'}`,
-    reply: (n) => `${n} ${n === 1 ? 'reply' : 'replies'} owed`,
-    deadline: (n) => `${n} ${n === 1 ? 'deadline' : 'deadlines'}`,
-    todo: (n) => `${n} ${n === 1 ? 'to-do' : 'to-dos'}`,
-  };
-  const order: readonly TaskKind[] = ['pay', 'sign', 'cheque', 'reply', 'deadline', 'todo'];
-  return `${order
-    .filter((kind) => counts.has(kind))
-    .map((kind) => phrases[kind](counts.get(kind)!))
-    .join(' · ')} this week.`;
+  if (count('overdue') > 0) {
+    return { headline: `${count('overdue')} overdue`, overdueChip: 0, tone: 'overdue', detail };
+  }
+  const headline = pressing.length + undatedOrLater.length > 0 ? 'Nothing due today' : 'Your desk is clear';
+  return { headline, overdueChip: 0, tone: 'clear', detail };
 }
 
 /**

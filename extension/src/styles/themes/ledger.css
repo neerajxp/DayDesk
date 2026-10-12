@@ -108,18 +108,18 @@
   letter-spacing: -0.03em;
 }
 
-[data-style='ledger'] .today__weekday {
+[data-style='ledger'] .today__overline {
   color: var(--text-primary);
   letter-spacing: 0.2em;
 }
 
-[data-style='ledger'] .today__date {
+[data-style='ledger'] .today__headline {
   font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -0.05em;
 }
 
-[data-style='ledger'] .today__briefing {
+[data-style='ledger'] .today__week {
   padding-left: var(--space-sm);
   border-left: 3px solid var(--accent);
   font-style: normal;

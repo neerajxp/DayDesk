@@ -105,16 +105,16 @@
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 
-[data-style='bento'] .today__date {
+[data-style='bento'] .today__headline {
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
-[data-style='bento'] .today__weekday {
+[data-style='bento'] .today__overline {
   color: var(--accent-strong);
 }
 
-[data-style='bento'] .today__briefing {
+[data-style='bento'] .today__week {
   font-style: normal;
   font-size: var(--text-sm);
 }

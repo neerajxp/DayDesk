@@ -17,30 +17,62 @@
   padding: var(--space-lg) var(--space-lg) var(--space-md);
 }
 
-.today__weekday {
+.today__overline {
   margin: 0;
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent-strong);
+  color: var(--text-tertiary);
 }
 
-.today__date {
-  margin: var(--space-hair) 0 0;
+.today__headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  margin: var(--space-xs) 0 0;
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.1;
   letter-spacing: -0.025em;
 }
 
-.today__briefing {
-  margin: var(--space-sm) 0 0;
-  font-family: var(--font-display);
-  font-size: var(--text-md);
-  font-style: italic;
+/* A clear day is good news, said quietly; overdue-only work is said in red. */
+.today__headline[data-tone='clear'] {
+  font-weight: 500;
   color: var(--text-secondary);
+}
+
+.today__headline[data-tone='overdue'] {
+  color: var(--danger);
+}
+
+.today__overdue {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--danger-wash);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--danger);
+}
+
+.today__week {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.today__week-label {
+  margin-right: var(--space-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
 .today__error {
@@ -73,7 +105,7 @@
 
 .today__dateline {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
 }
@@ -415,9 +447,6 @@
   stroke-linejoin: round;
 }
 
-.task[data-done='true'] .task__delete {
-  display: none;
-}
 
 @media (hover: none) {
   .task__delete {

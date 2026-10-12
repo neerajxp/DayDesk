@@ -108,24 +108,24 @@
   font-size: 0.8125rem;
 }
 
-[data-style='terminal'] .today__weekday::before {
+[data-style='terminal'] .today__overline::before {
   content: '// ';
   color: var(--text-tertiary);
 }
 
-[data-style='terminal'] .today__date {
+[data-style='terminal'] .today__headline {
   font-size: 1.625rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   text-shadow: var(--glow);
 }
 
-[data-style='terminal'] .today__briefing {
+[data-style='terminal'] .today__week {
   font-style: normal;
   font-size: var(--text-sm);
 }
 
-[data-style='terminal'] .today__briefing::before {
+[data-style='terminal'] .today__week::before {
   content: '> ';
   color: var(--accent);
 }
