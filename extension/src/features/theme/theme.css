@@ -1,0 +1,129 @@
+/* Day / Night switch: a quiet round button and a small anchored menu. */
+
+.theme-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.theme-menu__button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  appearance: none;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--surface-page);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out-expo),
+    color var(--duration-fast) var(--ease-out-expo),
+    background var(--duration-fast) var(--ease-out-expo);
+}
+
+.theme-menu__button:hover,
+.theme-menu__button[aria-expanded='true'] {
+  border-color: var(--rule-strong);
+  background: var(--surface-raised);
+  color: var(--accent-strong);
+}
+
+.theme-menu__button svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Small "A" badge: the icon shows today's theme, the badge says it is automatic. */
+.theme-menu__auto {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  border: 1px solid var(--rule-strong);
+  font-size: 0.45rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-tertiary);
+}
+
+.theme-menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 12;
+  display: grid;
+  min-width: 10rem;
+  padding: var(--space-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-overlay);
+  transform-origin: top right;
+  animation: theme-menu-open var(--duration-normal) var(--ease-out-expo);
+}
+
+@keyframes theme-menu-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.theme-menu__option {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  grid-template-areas: 'mark label' 'mark detail';
+  column-gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.theme-menu__option:hover {
+  background: var(--surface-hover);
+}
+
+.theme-menu__option::before {
+  content: '';
+  grid-area: mark;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+}
+
+.theme-menu__option[aria-checked='true']::before {
+  background: var(--accent);
+}
+
+.theme-menu__label {
+  grid-area: label;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.theme-menu__detail {
+  grid-area: detail;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}

@@ -10,9 +10,8 @@ import type { DayDeskApi } from '../../lib/api/client.js';
 import type { MessageDetail, Task, TaskPatch } from '../../lib/api/types.js';
 import { addDays, briefing, BUCKET_LABELS, BUCKET_ORDER, groupTasks, toDateKey } from '../../lib/tasks.js';
 import { MessageView } from '../mail/MessageView.js';
-import { QuickAdd } from './QuickAdd.js';
+import { AddButton, QuickAdd } from './QuickAdd.js';
 import { TaskRow } from './TaskRow.js';
-import { WhatsAppSources } from './WhatsAppSources.js';
 import './today.css';
 
 /** How long a ticked task stays in place, struck through, before it moves to Done. */
@@ -29,6 +28,7 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [settling, setSettling] = useState<ReadonlySet<number>>(new Set());
+  const [isAdding, setIsAdding] = useState(false);
   const [openMessage, setOpenMessage] = useState<MessageDetail | null>(null);
   const settleTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
@@ -50,6 +50,19 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   useEffect(() => {
     void load();
   }, [load, refreshKey]);
+
+  // N opens the add box from anywhere on the board — unless you are already typing.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key.toLowerCase() !== 'n' || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) return;
+      event.preventDefault();
+      setIsAdding(true);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   useEffect(() => {
     const timers = settleTimers.current;
@@ -154,13 +167,17 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   return (
     <div className="scroller today">
       <header className="today__header">
-        <p className="today__weekday">{now.toLocaleDateString(undefined, { weekday: 'long' })}</p>
-        <h2 className="today__date">{now.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</h2>
-        <p className="today__briefing">{isLoading ? ' ' : summary}</p>
+        <div className="today__dateline">
+          <div>
+            <p className="today__weekday">{now.toLocaleDateString(undefined, { weekday: 'long' })}</p>
+            <h2 className="today__date">{now.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</h2>
+          </div>
+          <AddButton isOpen={isAdding} onOpen={() => setIsAdding(true)} />
+        </div>
+        <p className="today__briefing">{isLoading ? '\u00a0' : summary}</p>
       </header>
 
-      <QuickAdd onAdd={add} />
-      <WhatsAppSources />
+      {isAdding && <QuickAdd onAdd={add} onClose={() => setIsAdding(false)} />}
 
       {error && (
         <p className="error-text today__error" role="alert">
@@ -179,7 +196,7 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
           <p className="today__empty-title">Nothing waiting on you.</p>
           <p className="state__text">
             DayDesk reads the last 30 days of your inbox and the WhatsApp chats you choose for bills, signatures,
-            cheques and requests, and lists them here. Add anything else above.
+            cheques and requests, and lists them here. Add anything else with + or the N key.
           </p>
         </div>
       ) : (

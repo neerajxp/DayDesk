@@ -22,6 +22,10 @@ import type { ServerEvent, SyncStatus } from '../lib/api/types.js';
 import { formatRelativeSync } from '../lib/format.js';
 import { AccountStage, TokenStage } from '../features/pairing/PairingScreen.js';
 import { TodayView } from '../features/today/TodayView.js';
+import { SourcesButton } from '../features/sources/SourcesButton.js';
+import { SourcesSheet } from '../features/sources/SourcesSheet.js';
+import { useWhatsAppState } from '../features/sources/useWhatsAppState.js';
+import { ThemeMenu } from '../features/theme/ThemeMenu.js';
 
 type ViewKey = 'loading' | 'helper-down' | 'needs-token' | 'needs-account' | 'today';
 
@@ -32,6 +36,8 @@ export function PanelShell() {
   const [transientError, setTransientError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [tasksKey, setTasksKey] = useState(0);
+  const [isSourcesOpen, setIsSourcesOpen] = useState(false);
+  const whatsApp = useWhatsAppState();
 
   // Rebuilt only when the token changes; TodayView depends on its identity.
   const api = useMemo<DayDeskApi | null>(() => (token ? createApi(token) : null), [token]);
@@ -148,20 +154,41 @@ export function PanelShell() {
 
   const inboxFolder = status?.folders.find((folder) => folder.role === 'inbox');
   const lastError = transientError ?? status?.lastError ?? null;
+  const isMailOn = status?.isConnected === true && !status.lastError;
+  const closeSources = useCallback(() => setIsSourcesOpen(false), []);
 
   return (
     <div className="panel">
-      <header className="masthead">
-        <h1 className="masthead__title">DayDesk</h1>
-        <span
-          className="pulse"
-          data-live={isLive}
-          data-syncing={isSyncing}
-          role="status"
-          aria-label={isSyncing ? 'Syncing' : isLive ? 'Connected' : 'Not connected'}
-        />
-        <span className="masthead__account">{status?.accountEmail ?? ''}</span>
-      </header>
+      <div className="masthead-area">
+        <header className="masthead">
+          <h1 className="masthead__title">DayDesk</h1>
+          <span
+            className="pulse"
+            data-live={isLive}
+            data-syncing={isSyncing}
+            role="status"
+            aria-label={isSyncing ? 'Syncing' : isLive ? 'Connected' : 'Not connected'}
+          />
+          {view === 'today' && (
+            <SourcesButton
+              isMailOn={isMailOn}
+              isWhatsAppOn={whatsApp.isConnected && whatsApp.watchList.length > 0}
+              isOpen={isSourcesOpen}
+              onToggle={() => setIsSourcesOpen((open) => !open)}
+            />
+          )}
+          <ThemeMenu />
+        </header>
+
+        {view === 'today' && isSourcesOpen && (
+          <SourcesSheet
+            accountEmail={status?.accountEmail ?? null}
+            isMailOn={isMailOn}
+            whatsApp={whatsApp}
+            onClose={closeSources}
+          />
+        )}
+      </div>
 
       <main className="panel__body">
         {view === 'today' && api ? (

@@ -1,0 +1,20 @@
+<!--
+  DayDesk icon, master drawing (128 units). "Ochre seal": the panel's ochre
+  accent as a tile, with a cream serif D in the panel's display face.
+
+  The PNGs beside this file are rasterised from this design with the real
+  Iowan Old Style glyph. Small sizes are tuned so the serif survives at
+  toolbar size: 16px uses inset 0 / radius 24 / D at 126 units; 32px uses
+  inset 2 / radius 26 / D at 108 units.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="ochre" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D4952F"/>
+      <stop offset="1" stop-color="#A9661A"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="116" height="116" rx="28" fill="url(#ochre)"/>
+  <rect x="6.5" y="6.5" width="115" height="115" rx="27.5" fill="none" stroke="#fff" stroke-opacity=".18"/>
+  <text x="64" y="95" text-anchor="middle" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-weight="700" font-size="88" fill="#FBF5E9">D</text>
+</svg>

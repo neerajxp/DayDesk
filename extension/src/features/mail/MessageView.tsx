@@ -17,6 +17,7 @@
 
 import { useMemo, useState } from 'react';
 import type { MessageDetail } from '../../lib/api/types.js';
+import { useTheme, type Theme } from '../../lib/theme.js';
 import { formatAddress, formatAddressList, formatBytes, formatFullDate } from '../../lib/format.js';
 
 interface MessageViewProps {
@@ -30,7 +31,13 @@ interface MessageViewProps {
  * `default-src 'none'` means nothing loads unless explicitly allowed below.
  * Inline styles are permitted because mail depends on them for all formatting.
  */
-function buildFrameDocument(html: string, allowRemoteImages: boolean): string {
+/** Ink for the frame's text, matched to the panel's theme rather than the Mac's. */
+const FRAME_INK: Record<Theme, { text: string; link: string }> = {
+  light: { text: '#1c1917', link: '#9a5b13' },
+  dark: { text: '#e7e5e4', link: '#fbbf24' },
+};
+
+function buildFrameDocument(html: string, allowRemoteImages: boolean, theme: Theme): string {
   const imgSrc = allowRemoteImages ? "img-src data: https: http:;" : 'img-src data:;';
   const csp = `default-src 'none'; style-src 'unsafe-inline'; ${imgSrc} font-src data:;`;
 
@@ -41,20 +48,17 @@ function buildFrameDocument(html: string, allowRemoteImages: boolean): string {
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <base target="_blank">
 <style>
-  :root { color-scheme: light dark; }
+  :root { color-scheme: ${theme}; }
   body {
     margin: 0;
     font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: #1c1917;
+    color: ${FRAME_INK[theme].text};
     background: transparent;
     overflow-wrap: anywhere;
   }
-  @media (prefers-color-scheme: dark) {
-    body { color: #e7e5e4; }
-    a { color: #fbbf24; }
-  }
+  a { color: ${FRAME_INK[theme].link}; }
   img, table { max-width: 100% !important; height: auto; }
   table { border-collapse: collapse; }
   blockquote {
@@ -70,14 +74,15 @@ function buildFrameDocument(html: string, allowRemoteImages: boolean): string {
 }
 
 export function MessageView({ message, onBack }: MessageViewProps) {
+  const { theme } = useTheme();
   const [allowRemoteImages, setAllowRemoteImages] = useState(false);
   const [preferHtml, setPreferHtml] = useState(!message.bodyText);
 
   const showHtml = preferHtml && message.bodyHtml !== null;
 
   const frameDocument = useMemo(
-    () => (showHtml && message.bodyHtml ? buildFrameDocument(message.bodyHtml, allowRemoteImages) : ''),
-    [showHtml, message.bodyHtml, allowRemoteImages],
+    () => (showHtml && message.bodyHtml ? buildFrameDocument(message.bodyHtml, allowRemoteImages, theme) : ''),
+    [showHtml, message.bodyHtml, allowRemoteImages, theme],
   );
 
   return (

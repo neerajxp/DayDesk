@@ -69,29 +69,82 @@
   font-weight: 600;
 }
 
-/* ── Quick add ──────────────────────────────────────────────────────────── */
+/* ── Add: a quiet "+" by the date, an input only on demand ──────────────── */
+
+.today__dateline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.add-button {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  margin-bottom: 0.2rem;
+  padding: 0;
+  appearance: none;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out-expo),
+    border-color var(--duration-fast) var(--ease-out-expo),
+    background var(--duration-fast) var(--ease-out-expo),
+    transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.add-button:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-wash);
+}
+
+.add-button:active {
+  transform: scale(0.92);
+}
+
+/* Open: the plus turns into an ×-ish tilt, saying "this is what you opened". */
+.add-button[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-wash);
+  transform: rotate(45deg);
+}
+
+.add-button svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
 
 .quick-add {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin: 0 var(--space-lg) var(--space-md);
+  margin: 0 var(--space-lg) var(--space-sm);
   padding: var(--space-sm) var(--space-md);
   background: var(--surface-raised);
-  border: 1px solid var(--rule);
+  border: 1px solid var(--accent);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-raised);
-  transition: border-color var(--duration-fast) var(--ease-out-expo);
+  transform-origin: top center;
+  animation: quick-add-open var(--duration-normal) var(--ease-out-expo);
 }
 
-.quick-add:focus-within {
-  border-color: var(--accent);
-}
-
-.quick-add__plus {
-  font-size: var(--text-lg);
-  line-height: 1;
-  color: var(--accent-strong);
+@keyframes quick-add-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 .quick-add__input {
@@ -593,160 +646,4 @@
 
 .trail__text--link:hover {
   text-decoration: underline;
-}
-
-/* ── Sources strip + WhatsApp watch list ────────────────────────────────── */
-
-.sources {
-  margin: 0 var(--space-lg);
-}
-
-.sources__strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs) var(--space-md);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-.sources__item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-weight: 600;
-}
-
-.sources__item--button {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: inherit;
-  cursor: pointer;
-}
-
-.sources__item--button:hover .sources__detail {
-  color: var(--accent-strong);
-}
-
-.sources__detail {
-  font-weight: 400;
-  color: var(--text-tertiary);
-  transition: color var(--duration-fast) var(--ease-out-expo);
-}
-
-.sources__chevron {
-  font-size: 0.6rem;
-  color: var(--text-tertiary);
-}
-
-.sources__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-}
-
-.sources__dot[data-on='true'] {
-  background: var(--positive);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--positive) 18%, transparent);
-}
-
-.watch {
-  display: grid;
-  gap: var(--space-sm);
-  margin-top: var(--space-sm);
-  padding: var(--space-md);
-  background: var(--surface-raised);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-raised);
-}
-
-.watch__intro,
-.watch__notice {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-.watch__link {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: var(--source-whatsapp);
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.watch__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-hair);
-}
-
-.watch__entry {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--surface-sunken);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-}
-
-.watch__kind {
-  flex-shrink: 0;
-  width: 3.5rem;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.watch__name {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.watch__remove {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0 var(--space-xs);
-  font: inherit;
-  font-size: var(--text-md);
-  line-height: 1;
-  color: var(--text-tertiary);
-  cursor: pointer;
-}
-
-.watch__remove:hover {
-  color: var(--danger);
-}
-
-.watch__add {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.watch__add .field__input {
-  flex: 1;
-  min-width: 0;
-  padding-block: var(--space-xs);
-  font-size: var(--text-sm);
-}
-
-.watch__add .button {
-  padding: var(--space-xs) var(--space-md);
-  font-size: var(--text-sm);
 }
