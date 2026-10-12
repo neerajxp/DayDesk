@@ -8,6 +8,14 @@ import { defineConfig } from 'wxt';
  * panel to call the helper at all.
  */
 export default defineConfig({
+  hooks: {
+    // WXT registers the side panel globally (side_panel.default_path), which
+    // shows DayDesk in every tab. Dropping it leaves the panel per-tab: the
+    // background worker enables it only for the tab whose icon was clicked.
+    'build:manifestGenerated': (_wxt, manifest) => {
+      delete (manifest as { side_panel?: unknown }).side_panel;
+    },
+  },
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
   manifest: {

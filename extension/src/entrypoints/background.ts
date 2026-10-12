@@ -10,15 +10,31 @@ import { isDeliverRequest, type DeliverRequest, type DeliverResponse } from '../
  * panel is a real page and owns the live connection; the helper daemon owns
  * notifications.
  *
- * An extension cannot force its own side panel open on install —
- * sidePanel.open() requires a user gesture. Setting openPanelOnActionClick is
- * the closest available behaviour: one click on the toolbar icon opens DayDesk.
+ * The side panel is per tab. The manifest declares no global panel (see
+ * wxt.config.ts), so DayDesk exists only in tabs where you clicked its icon:
+ * switch away and it hides, switch back and it is there again, close the tab
+ * and it is gone. Opening it in another tab gives that tab its own panel.
  */
 
+const PANEL_PATH = 'sidepanel.html';
+
 export default defineBackground(() => {
+  // The icon click is handled below rather than by Chrome, so the panel can be
+  // scoped to the clicked tab.
   chrome.sidePanel
-    .setPanelBehavior({ openPanelOnActionClick: true })
+    .setPanelBehavior({ openPanelOnActionClick: false })
     .catch((error: unknown) => console.error('DayDesk: could not set panel behavior', error));
+
+  chrome.action.onClicked.addListener((tab) => {
+    if (tab.id === undefined) return;
+    // Both calls are made synchronously, without awaiting: sidePanel.open()
+    // must run inside the click's user gesture, which an await would lose.
+    // Chrome applies setOptions before open, as calls are queued in order.
+    void chrome.sidePanel.setOptions({ tabId: tab.id, path: PANEL_PATH, enabled: true });
+    chrome.sidePanel
+      .open({ tabId: tab.id })
+      .catch((error: unknown) => console.error('DayDesk: could not open the panel', error));
+  });
 
   // Relay for the WhatsApp tab. Only our own content script can reach this:
   // sender.id must be this extension, and the tab must be WhatsApp Web.
