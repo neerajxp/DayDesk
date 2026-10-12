@@ -249,7 +249,7 @@ function relatedFor(
        FROM task_links l
        LEFT JOIN messages m ON m.id = l.message_id
        LEFT JOIN chat_messages c ON c.id = l.chat_message_id
-       WHERE l.task_id IN (SELECT value FROM json_each(?))
+       WHERE l.task_id IN (SELECT value FROM json_each(?)) AND l.is_hidden = 0
        ORDER BY COALESCE(m.internal_date, c.sent_at), l.id`,
     )
     .all(JSON.stringify(taskIds)) as LinkRow[];
@@ -299,6 +299,29 @@ export function addTaskLink(db: Database, taskId: number, origin: TaskOrigin, re
        ON CONFLICT DO NOTHING`,
     )
     .run(taskId, id, relation, new Date().toISOString());
+  return result.changes > 0;
+}
+
+/**
+ * Hide (or restore) one message on a task's trail. Returns false when that
+ * message is not on that task — including when the task belongs to another
+ * account.
+ */
+export function setRelatedHidden(
+  db: Database,
+  accountId: number,
+  taskId: number,
+  ref: { source: 'email' | ChatSource; refId: number },
+  hidden: boolean,
+): boolean {
+  const column = ref.source === 'email' ? 'message_id' : 'chat_message_id';
+  const result = db
+    .prepare(
+      `UPDATE task_links SET is_hidden = ?
+       WHERE task_id = ? AND ${column} = ?
+         AND task_id IN (SELECT id FROM tasks WHERE account_id = ?)`,
+    )
+    .run(hidden ? 1 : 0, taskId, ref.refId, accountId);
   return result.changes > 0;
 }
 

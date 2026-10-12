@@ -13,6 +13,12 @@
 import { useState } from 'react';
 import { createApi } from '../../lib/api/client.js';
 import { guessProvider, providerById, PROVIDERS, type ProviderId } from '../../lib/providers.js';
+import { isFeatureEnabled } from '../../lib/features.js';
+
+/** Providers that are built but not released yet show as "Soon" and cannot be chosen. */
+function isAvailable(id: ProviderId): boolean {
+  return id !== 'gmail' || isFeatureEnabled('gmail');
+}
 
 interface TokenStageProps {
   readonly onPaired: (token: string) => void;
@@ -98,11 +104,15 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
   const [isPairing, setIsPairing] = useState(false);
 
   const provider = providerById(providerId) ?? PROVIDERS[0]!;
+  const guessed = guessProvider(email);
+  // Typed a Gmail address while Gmail is still "Soon": say so, rather than
+  // letting it fail as a Yahoo login.
+  const unavailableGuess = guessed && !isAvailable(guessed) ? providerById(guessed) : null;
 
   function changeEmail(next: string): void {
     setEmail(next);
-    const guessed = guessProvider(next);
-    if (guessed && !isProviderChosen) setProviderId(guessed);
+    const nextGuess = guessProvider(next);
+    if (nextGuess && isAvailable(nextGuess) && !isProviderChosen) setProviderId(nextGuess);
   }
 
   async function submit(event: React.FormEvent): Promise<void> {
@@ -129,21 +139,28 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
 
       <form className="form" onSubmit={submit}>
         <div className="provider-choice" role="radiogroup" aria-label="Email provider">
-          {PROVIDERS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={providerId === option.id}
-              className="provider-choice__option"
-              onClick={() => {
-                setProviderId(option.id);
-                setIsProviderChosen(true);
-              }}
-            >
-              {option.name}
-            </button>
-          ))}
+          {PROVIDERS.map((option) => {
+            const isSoon = !isAvailable(option.id);
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={providerId === option.id}
+                aria-disabled={isSoon}
+                disabled={isSoon}
+                title={isSoon ? `${option.name} support is coming soon` : undefined}
+                className="provider-choice__option"
+                onClick={() => {
+                  setProviderId(option.id);
+                  setIsProviderChosen(true);
+                }}
+              >
+                {option.name}
+                {isSoon && <span className="provider-choice__soon">Soon</span>}
+              </button>
+            );
+          })}
         </div>
 
         <p className="state__text">
@@ -167,6 +184,11 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
             onChange={(event) => changeEmail(event.target.value)}
             required
           />
+          {unavailableGuess && (
+            <span className="field__hint field__hint--warn">
+              {unavailableGuess.name} support is coming soon. Connect a {provider.name} address for now.
+            </span>
+          )}
         </div>
 
         <div className="field">
@@ -193,7 +215,7 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
         <button
           type="submit"
           className="button"
-          disabled={isPairing || email.trim().length === 0 || appPassword.length === 0}
+          disabled={isPairing || email.trim().length === 0 || appPassword.length === 0 || unavailableGuess !== null}
         >
           {isPairing ? `Verifying with ${provider.name}…` : `Connect ${provider.name}`}
         </button>

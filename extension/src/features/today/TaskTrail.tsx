@@ -22,9 +22,11 @@ function trailWho(item: RelatedItem): string {
 interface TaskTrailProps {
   readonly items: readonly RelatedItem[];
   readonly onOpenEmail: (messageId: number) => void;
+  /** Take this message off the trail — it does not belong to the task. */
+  readonly onRemove: (item: RelatedItem) => void;
 }
 
-export function TaskTrail({ items, onOpenEmail }: TaskTrailProps) {
+export function TaskTrail({ items, onOpenEmail, onRemove }: TaskTrailProps) {
   if (items.length === 0) return null;
 
   return (
@@ -42,6 +44,15 @@ export function TaskTrail({ items, onOpenEmail }: TaskTrailProps) {
               <time className="trail__time" dateTime={item.at}>
                 {formatTrailTime(item.at)}
               </time>
+              <button
+                type="button"
+                className="trail__remove"
+                aria-label={`Remove this ${item.source === 'email' ? 'email' : 'message'} from the task`}
+                title="Remove from this task"
+                onClick={() => onRemove(item)}
+              >
+                ×
+              </button>
             </p>
             {item.source === 'email' ? (
               <button type="button" className="trail__text trail__text--link" onClick={() => onOpenEmail(item.refId)}>

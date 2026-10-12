@@ -7,11 +7,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DayDeskApi } from '../../lib/api/client.js';
-import type { MessageDetail, Task, TaskPatch } from '../../lib/api/types.js';
+import type { MessageDetail, RelatedItem, Task, TaskPatch } from '../../lib/api/types.js';
 import { addDays, briefing, BUCKET_LABELS, BUCKET_ORDER, groupTasks, toDateKey } from '../../lib/tasks.js';
 import { MessageView } from '../mail/MessageView.js';
 import { AddButton, QuickAdd } from './QuickAdd.js';
 import { TaskRow } from './TaskRow.js';
+import { UndoToast, type UndoAction } from './UndoToast.js';
 import './today.css';
 
 /** How long a ticked task stays in place, struck through, before it moves to Done. */
@@ -29,6 +30,11 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [settling, setSettling] = useState<ReadonlySet<number>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
+  const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
+  const clearUndo = useCallback(() => setUndoAction(null), []);
+  const offerUndo = useCallback((message: string, undo: () => Promise<void>) => {
+    setUndoAction({ id: Date.now(), message, undo });
+  }, []);
   const [openMessage, setOpenMessage] = useState<MessageDetail | null>(null);
   const settleTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
@@ -131,7 +137,48 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
     [patchTask],
   );
 
-  const dismiss = useCallback((task: Task) => void patchTask(task, { status: 'dismissed' }, null), [patchTask]);
+  // Delete is a soft delete ("dismissed"): the rules will not recreate it, and
+  // Undo simply reopens it.
+  const dismiss = useCallback(
+    (task: Task) => {
+      void patchTask(task, { status: 'dismissed' }, null);
+      offerUndo(`Deleted “${task.title}”`, async () => {
+        try {
+          await api.updateTask(task.id, { status: task.status });
+          await load();
+        } catch (cause) {
+          setError(cause instanceof Error ? `Couldn’t undo: ${cause.message}` : 'Couldn’t undo that.');
+        }
+      });
+    },
+    [api, load, offerUndo, patchTask],
+  );
+
+  const removeRelated = useCallback(
+    (task: Task, item: RelatedItem) => {
+      const ref = { source: item.source, refId: item.refId };
+      setTasks((current) =>
+        current.map((candidate) =>
+          candidate.id === task.id
+            ? { ...candidate, related: candidate.related.filter((r) => r.source !== item.source || r.refId !== item.refId) }
+            : candidate,
+        ),
+      );
+      api.setRelatedHidden(task.id, ref, true).catch((cause: unknown) => {
+        void load();
+        setError(cause instanceof Error ? `Couldn’t remove that: ${cause.message}` : 'Couldn’t remove that message.');
+      });
+      offerUndo(`Removed a message from “${task.title}”`, async () => {
+        try {
+          await api.setRelatedHidden(task.id, ref, false);
+          await load();
+        } catch (cause) {
+          setError(cause instanceof Error ? `Couldn’t undo: ${cause.message}` : 'Couldn’t undo that.');
+        }
+      });
+    },
+    [api, load, offerUndo],
+  );
 
   const add = useCallback(
     async (title: string, dueDate: string | null) => {
@@ -217,12 +264,14 @@ export function TodayView({ api, refreshKey }: TodayViewProps) {
                   onSnooze={snooze}
                   onDismiss={dismiss}
                   onOpenEmail={(messageId) => void openEmail(messageId)}
+                  onRemoveRelated={removeRelated}
                 />
               ))}
             </ul>
           </section>
         ))
       )}
+      <UndoToast action={undoAction} onDone={clearUndo} />
     </div>
   );
 }

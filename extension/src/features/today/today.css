@@ -367,6 +367,64 @@
   flex: 0 1 auto;
 }
 
+/* Delete: a small bin at the end of the head row, shown with the actions. */
+.task__delete {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-left: auto;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--duration-fast) var(--ease-out-expo),
+    color var(--duration-fast) var(--ease-out-expo),
+    background var(--duration-fast) var(--ease-out-expo);
+}
+
+/* With a due label present, that label already takes the slack. */
+.task__due + .task__delete {
+  margin-left: 0;
+}
+
+.task:hover .task__delete,
+.task:focus-within .task__delete {
+  opacity: 1;
+}
+
+.task__delete:hover,
+.task__delete:focus-visible {
+  color: var(--danger);
+  background: var(--danger-wash);
+}
+
+.task__delete svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.task[data-done='true'] .task__delete {
+  display: none;
+}
+
+@media (hover: none) {
+  .task__delete {
+    opacity: 1;
+  }
+}
+
 /*
  * Secondary actions surface only on hover or keyboard focus. They float over
  * the row's bottom-right corner instead of taking a line, so the resting board
@@ -422,11 +480,6 @@
 
 .task__action:hover {
   text-decoration: underline;
-}
-
-.task__action--quiet {
-  color: var(--text-tertiary);
-  font-weight: 500;
 }
 
 /* ── Done ───────────────────────────────────────────────────────────────── */
@@ -627,6 +680,42 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Take a message off the trail — appears on hover, like the bin. */
+.trail__remove {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out-expo);
+}
+
+.trail__item:hover .trail__remove,
+.trail__item:focus-within .trail__remove {
+  opacity: 1;
+}
+
+.trail__remove:hover,
+.trail__remove:focus-visible {
+  color: var(--danger);
+  background: var(--danger-wash);
+}
+
+@media (hover: none) {
+  .trail__remove {
+    opacity: 1;
+  }
+}
+
 .trail__text {
   margin: var(--space-hair) 0 0;
   font-size: var(--text-sm);
@@ -652,4 +741,58 @@
 
 .trail__text--link:hover {
   text-decoration: underline;
+}
+
+/* ── Undo — floats at the bottom of the board after a delete ────────────── */
+
+.undo-toast {
+  position: sticky;
+  bottom: var(--space-md);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) var(--space-md) 0;
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--text-primary);
+  color: var(--surface-page);
+  box-shadow: var(--shadow-overlay);
+  font-size: var(--text-sm);
+  animation: undo-in var(--duration-normal) var(--ease-out-expo);
+}
+
+@keyframes undo-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.undo-toast__message {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.undo-toast__button {
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-sm);
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.undo-toast__button:hover {
+  background: color-mix(in oklch, var(--surface-page) 15%, transparent);
 }

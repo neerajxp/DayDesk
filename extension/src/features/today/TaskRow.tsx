@@ -10,7 +10,7 @@
  * one-click confirmation — never applied on its own.
  */
 
-import type { Task } from '../../lib/api/types.js';
+import type { RelatedItem, Task } from '../../lib/api/types.js';
 import { doneHintOf, dueLabel, KIND_LABELS, originOf, sourcesOf } from '../../lib/tasks.js';
 import { TaskTrail } from './TaskTrail.js';
 
@@ -30,11 +30,31 @@ interface TaskRowProps {
   readonly isSettling: boolean;
   readonly onToggle: (task: Task) => void;
   readonly onSnooze: (task: Task) => void;
+  /** Delete the task (undoable). */
   readonly onDismiss: (task: Task) => void;
   readonly onOpenEmail: (messageId: number) => void;
+  /** Remove one message from the task's trail (undoable). */
+  readonly onRemoveRelated: (task: Task, item: RelatedItem) => void;
 }
 
-export function TaskRow({ task, todayKey, isSettling, onToggle, onSnooze, onDismiss, onOpenEmail }: TaskRowProps) {
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2.75 4.25h10.5M6.25 4.25V2.75h3.5v1.5M4 4.25l.6 8.4a1 1 0 0 0 1 .93h4.8a1 1 0 0 0 1-.93l.6-8.4M6.75 7v4M9.25 7v4" />
+    </svg>
+  );
+}
+
+export function TaskRow({
+  task,
+  todayKey,
+  isSettling,
+  onToggle,
+  onSnooze,
+  onDismiss,
+  onOpenEmail,
+  onRemoveRelated,
+}: TaskRowProps) {
   const isDone = task.status === 'done' || isSettling;
   const due = isDone ? null : dueLabel(task.dueDate, todayKey);
   const isOverdue = !isDone && task.dueDate !== null && task.dueDate < todayKey;
@@ -75,6 +95,15 @@ export function TaskRow({ task, todayKey, isSettling, onToggle, onSnooze, onDism
               {due}
             </span>
           )}
+          <button
+            type="button"
+            className="task__delete"
+            aria-label={`Delete “${task.title}”`}
+            title="Delete"
+            onClick={() => onDismiss(task)}
+          >
+            <TrashIcon />
+          </button>
         </div>
 
         <p className="task__title">{task.title}</p>
@@ -100,7 +129,9 @@ export function TaskRow({ task, todayKey, isSettling, onToggle, onSnooze, onDism
           </div>
         )}
 
-        {!isDone && <TaskTrail items={task.related} onOpenEmail={onOpenEmail} />}
+        {!isDone && (
+          <TaskTrail items={task.related} onOpenEmail={onOpenEmail} onRemove={(item) => onRemoveRelated(task, item)} />
+        )}
 
         {!isDone && (
           <div className="task__actions">
@@ -111,9 +142,6 @@ export function TaskRow({ task, todayKey, isSettling, onToggle, onSnooze, onDism
             )}
             <button type="button" className="task__action" onClick={() => onSnooze(task)}>
               Tomorrow
-            </button>
-            <button type="button" className="task__action task__action--quiet" onClick={() => onDismiss(task)}>
-              {task.source === 'rule' ? 'Not a task' : 'Delete'}
             </button>
           </div>
         )}

@@ -94,6 +94,33 @@ export async function registerTaskRoutes(app: FastifyInstance, deps: TaskRouteDe
     },
   );
 
+  // Remove (or restore) one message from a task's trail.
+  app.patch<{ Params: { id: number }; Body: { source: 'email' | 'whatsapp'; refId: number; hidden: boolean } }>(
+    '/api/tasks/:id/related',
+    {
+      schema: {
+        params: idParams,
+        body: {
+          type: 'object',
+          required: ['source', 'refId', 'hidden'],
+          additionalProperties: false,
+          properties: {
+            source: { type: 'string', enum: ['email', 'whatsapp'] },
+            refId: { type: 'integer', minimum: 1 },
+            hidden: { type: 'boolean' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const account = requireAccount();
+      const { source, refId, hidden } = request.body;
+      const changed = tasksStore.setRelatedHidden(deps.db, account.id, request.params.id, { source, refId }, hidden);
+      if (!changed) return reply.code(404).send({ error: 'not_found', message: 'That message is not on this task.' });
+      return tasksStore.getTask(deps.db, account.id, request.params.id);
+    },
+  );
+
   app.patch<{ Params: { id: number }; Body: { status?: TaskStatus; dueDate?: string | null; title?: string } }>(
     '/api/tasks/:id',
     {

@@ -281,11 +281,6 @@
   text-decoration: none;
 }
 
-[data-style='cards'] .task__action--quiet {
-  margin-left: auto;
-  color: var(--text-tertiary);
-}
-
 [data-style='cards'] .task[data-done='true'] {
   box-shadow: none;
   background: transparent;

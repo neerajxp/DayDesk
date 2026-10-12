@@ -209,6 +209,16 @@ const MIGRATIONS: readonly Migration[] = [
       ALTER TABLE chat_messages ADD COLUMN rules_version INTEGER NOT NULL DEFAULT 1;
     `,
   },
+  {
+    version: 7,
+    name: 'task-link-hidden',
+    // A message the user removed from a task's trail. The link row stays (so a
+    // later re-read sees it as already handled and neither re-attaches it nor
+    // turns it into a task of its own); it is only hidden from view.
+    up: `
+      ALTER TABLE task_links ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;

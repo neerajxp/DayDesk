@@ -298,3 +298,19 @@ describe('knowing who "you" are', () => {
     expect(byTitle.get('Pay credit card bill')?.chat?.isFromYou).toBe(true);
   });
 });
+
+describe('PATCH /api/tasks/:id/related', () => {
+  test('validates its body', async () => {
+    const db = createTestDatabase();
+    const session = { getStatus: () => ({}), stop: async () => {} } as unknown as MailSession;
+    const server = await createServer({ db, session, token: TOKEN, port: 4287, restartSession: async () => {}, logging: false });
+    upsertAccount(db, 'me@yahoo.com', 'yahoo');
+    const patch = (payload: object) =>
+      server.app.inject({ method: 'PATCH', url: '/api/tasks/1/related', headers: auth, payload });
+
+    expect((await patch({ source: 'sms', refId: 1, hidden: true })).statusCode).toBe(400);
+    expect((await patch({ source: 'email', refId: 1 })).statusCode).toBe(400);
+    expect((await patch({ source: 'email', refId: 1, hidden: true })).statusCode).toBe(404);
+    await server.close();
+  });
+});

@@ -114,6 +114,13 @@ export function createApi(token: string) {
     updateTask: (id: number, patch: TaskPatch) =>
       request<Task>(`/api/tasks/${id}`, token, { method: 'PATCH', body: JSON.stringify(patch) }),
 
+    /** Remove (hidden: true) or restore one message on a task's trail. */
+    setRelatedHidden: (taskId: number, ref: { source: 'email' | 'whatsapp'; refId: number }, hidden: boolean) =>
+      request<Task>(`/api/tasks/${taskId}/related`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ ...ref, hidden }),
+      }),
+
     sync: (role?: FolderRole) =>
       request<{ ok: boolean; status: SyncStatus }>('/api/mail/sync', token, {
         method: 'POST',

@@ -387,6 +387,27 @@ body {
   color: var(--text-primary);
 }
 
+.provider-choice__option:disabled {
+  cursor: not-allowed;
+  color: var(--text-tertiary);
+}
+
+.provider-choice__soon {
+  margin-left: var(--space-xs);
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-wash);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.field__hint.field__hint--warn {
+  color: var(--accent-strong);
+}
+
 .provider-choice__option[aria-checked='true'] {
   background: var(--surface-raised);
   color: var(--text-primary);

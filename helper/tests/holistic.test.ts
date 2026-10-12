@@ -173,3 +173,40 @@ describe('stored WhatsApp messages get a second look', () => {
     expect(listTasks(db, accountId, { doneSince: '2000-01-01' })).toEqual([]);
   });
 });
+
+describe('removing a message from a task trail', () => {
+  test('hides it from the trail, keeps it hidden through re-reads, and can be restored', async () => {
+    const { setRelatedHidden } = await import('../src/store/tasks.js');
+    const { rescanChatMessages } = await import('../src/tasks/chatScan.js');
+    const db = createTestDatabase();
+    const accountId = upsertAccount(db, 'me@yahoo.com', 'yahoo').id;
+
+    const first = insertChatMessage(db, { source: 'whatsapp', chatName: 'Family', sender: 'Mom', text: 'pls pay the PG&E bill', isFromMe: false, sentAt: NOW });
+    ingest(db, accountId, { chatMessageId: first.id }, { candidates: [extractChatTask({ text: 'pls pay the PG&E bill', chatName: 'Family', sender: 'Mom', isFromMe: false, sentAt: NOW })!], text: 'pls pay the PG&E bill', now: NOW });
+    const nudge = insertChatMessage(db, { source: 'whatsapp', chatName: 'Family', sender: 'Mom', text: 'Did you pay the PG&E bill?', isFromMe: false, sentAt: NOW });
+    ingest(db, accountId, { chatMessageId: nudge.id }, { candidates: [extractChatTask({ text: 'Did you pay the PG&E bill?', chatName: 'Family', sender: 'Mom', isFromMe: false, sentAt: NOW })!], text: 'Did you pay the PG&E bill?', now: NOW });
+
+    const task = listTasks(db, accountId, { doneSince: '2000-01-01' })[0]!;
+    expect(task.related).toHaveLength(1);
+
+    expect(setRelatedHidden(db, accountId, task.id, { source: 'whatsapp', refId: nudge.id }, true)).toBe(true);
+    expect(listTasks(db, accountId, { doneSince: '2000-01-01' })[0]!.related).toEqual([]);
+
+    // A re-read with newer rules must not re-attach it, nor make it its own task.
+    db.prepare('UPDATE chat_messages SET rules_version = 1').run();
+    rescanChatMessages(db, accountId, NOW);
+    const after = listTasks(db, accountId, { doneSince: '2000-01-01' });
+    expect(after).toHaveLength(1);
+    expect(after[0]!.related).toEqual([]);
+
+    setRelatedHidden(db, accountId, task.id, { source: 'whatsapp', refId: nudge.id }, false);
+    expect(listTasks(db, accountId, { doneSince: '2000-01-01' })[0]!.related).toHaveLength(1);
+  });
+
+  test('refuses a message that is not on that task', async () => {
+    const { setRelatedHidden } = await import('../src/store/tasks.js');
+    const db = createTestDatabase();
+    const accountId = upsertAccount(db, 'me@yahoo.com', 'yahoo').id;
+    expect(setRelatedHidden(db, accountId, 999, { source: 'email', refId: 1 }, true)).toBe(false);
+  });
+});
