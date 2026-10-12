@@ -73,7 +73,7 @@ export async function registerChatRoutes(app: FastifyInstance, deps: ChatRouteDe
       if (!account) {
         return reply.code(409).send({
           error: 'not_paired',
-          message: 'Pair DayDesk with your mail account before connecting WhatsApp.',
+          message: 'Connect DayDesk to your email account before connecting WhatsApp.',
         });
       }
 

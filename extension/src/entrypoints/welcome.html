@@ -115,8 +115,8 @@
     <main>
       <h1>DayDesk</h1>
       <p class="lede">
-        A local-first archive and reader for your Yahoo mail. Your mail is stored on this machine and
-        nowhere else.
+        Your day at a glance: bills, signatures and requests from your Yahoo Mail or Gmail and the
+        WhatsApp chats you choose. Your mail is stored on this machine and nowhere else.
       </p>
 
       <h2>1. Start the helper</h2>
@@ -134,24 +134,37 @@
       <pre><code>cat ~/.daydesk/token</code></pre>
       <p>Click the DayDesk toolbar icon to open the side panel, then paste the token.</p>
 
-      <h2>3. Add your Yahoo account</h2>
+      <h2>3. Connect your email</h2>
       <p>
-        Yahoo has no public mail API, so DayDesk reads over IMAP using a
-        <a href="https://help.yahoo.com/kb/SLN15241.html" target="_blank" rel="noreferrer noopener"
-          >third-party app password</a
-        >
-        — not your real account password. The helper verifies it and hands it to your macOS Keychain.
+        DayDesk watches one account at a time — Yahoo Mail or Gmail. It reads over IMAP using an app
+        password, not your real account password. The helper verifies it and hands it to your macOS
+        Keychain.
       </p>
+      <ul>
+        <li>
+          <strong>Yahoo Mail:</strong>
+          <a href="https://help.yahoo.com/kb/SLN15241.html" target="_blank" rel="noreferrer noopener"
+            >generate a third-party app password</a
+          >.
+        </li>
+        <li>
+          <strong>Gmail:</strong>
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer noopener"
+            >create an app password</a
+          >
+          — this needs 2-Step Verification, and work or school accounts may have it turned off.
+        </li>
+      </ul>
 
       <div class="note">
         <p style="margin: 0 0 0.5rem">
-          <strong>What DayDesk archives.</strong> Yahoo's IMAP only serves the most recent 10,000
-          messages per folder, and DayDesk pulls the newest 1,000 of your Inbox and Sent mail on first
-          sync.
+          <strong>What DayDesk archives.</strong> DayDesk pulls the newest 1,000 of your Inbox and
+          Sent mail on first sync. (Yahoo's IMAP only serves the most recent 10,000 messages per
+          folder; Gmail has no such limit.)
         </p>
         <p style="margin: 0">
-          Everything from that point forward is kept permanently, even after it rolls out of Yahoo's
-          window. Nothing older than your first sync is backfilled.
+          Everything from that point forward is kept permanently, even after it rolls out of your
+          provider's window. Nothing older than your first sync is backfilled.
         </p>
       </div>
 
@@ -159,7 +172,7 @@
         <p style="margin: 0">
           <strong>Read-only, by design.</strong> DayDesk opens your mailboxes with IMAP
           <code>EXAMINE</code> rather than <code>SELECT</code>, so reading a message here never marks
-          it read on Yahoo. There is no code path in DayDesk that writes to your mailbox.
+          it read in Yahoo or Gmail. There is no code path in DayDesk that writes to your mailbox.
         </p>
       </div>
 

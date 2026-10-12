@@ -32,6 +32,8 @@ function makeSession(db: Database, stub: SessionStub): MailSession {
     getStatus(): SyncStatus {
       return {
         accountEmail: 'me@yahoo.com',
+        providerId: 'yahoo',
+        providerName: 'Yahoo Mail',
         isPaired: true,
         isConnected: true,
         isSyncing: false,
@@ -529,7 +531,8 @@ describe('server', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual([
-        expect.objectContaining({ id: 'yahoo', maxMessagesPerFolder: 10_000 }),
+        expect.objectContaining({ id: 'yahoo', displayName: 'Yahoo Mail', maxMessagesPerFolder: 10_000 }),
+        expect.objectContaining({ id: 'gmail', displayName: 'Gmail', maxMessagesPerFolder: null }),
       ]);
     });
   });

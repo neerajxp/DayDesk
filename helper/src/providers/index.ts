@@ -1,7 +1,12 @@
 import type { MailProvider } from './types.js';
 import { YAHOO } from './yahoo.js';
+import { GMAIL } from './gmail.js';
 
-const REGISTRY: ReadonlyMap<string, MailProvider> = new Map([[YAHOO.id, YAHOO]]);
+/** Insertion order is the order the pairing screen offers them in. */
+const REGISTRY: ReadonlyMap<string, MailProvider> = new Map([
+  [YAHOO.id, YAHOO],
+  [GMAIL.id, GMAIL],
+]);
 
 export function getProvider(id: string): MailProvider {
   const provider = REGISTRY.get(id);
@@ -19,5 +24,5 @@ export function listProviders(): readonly MailProvider[] {
   return [...REGISTRY.values()];
 }
 
-export { YAHOO };
+export { YAHOO, GMAIL };
 export type { MailProvider, AuthMethod, ProviderCapabilities } from './types.js';

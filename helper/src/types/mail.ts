@@ -27,8 +27,9 @@ export interface MessageSummary {
   readonly internalDate: string;
   readonly size: number;
   /**
-   * Read state as reported by Yahoo at last sync. DayDesk is read-only, so this
-   * reflects what you did in Yahoo Mail elsewhere — DayDesk never changes it.
+   * Read state as reported by the provider at last sync. DayDesk is read-only,
+   * so this reflects what you did in your mail client elsewhere — DayDesk never
+   * changes it.
    */
   readonly isSeen: boolean;
   readonly isFlagged: boolean;
@@ -61,6 +62,9 @@ export interface FolderState {
 
 export interface SyncStatus {
   readonly accountEmail: string | null;
+  /** Which provider the account is on ("yahoo", "gmail"), and its display name. */
+  readonly providerId: string | null;
+  readonly providerName: string | null;
   readonly isPaired: boolean;
   readonly isConnected: boolean;
   readonly isSyncing: boolean;

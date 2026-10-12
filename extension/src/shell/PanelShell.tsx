@@ -157,6 +157,15 @@ export function PanelShell() {
   const isMailOn = status?.isConnected === true && !status.lastError;
   const closeSources = useCallback(() => setIsSourcesOpen(false), []);
 
+  // Unpair, then let resolve() land on the connect screen for the next account.
+  const disconnectEmail = useCallback(async () => {
+    if (!api) return;
+    await api.unpair();
+    setIsSourcesOpen(false);
+    setStatus(null);
+    await resolve();
+  }, [api, resolve]);
+
   return (
     <div className="panel">
       <div className="masthead-area">
@@ -183,7 +192,9 @@ export function PanelShell() {
         {view === 'today' && isSourcesOpen && (
           <SourcesSheet
             accountEmail={status?.accountEmail ?? null}
+            providerName={status?.providerName ?? null}
             isMailOn={isMailOn}
+            onDisconnect={disconnectEmail}
             whatsApp={whatsApp}
             onClose={closeSources}
           />

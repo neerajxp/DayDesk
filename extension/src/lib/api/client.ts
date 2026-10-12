@@ -34,7 +34,7 @@ export class UnauthorizedError extends Error {
 
 export class NotPairedError extends Error {
   constructor() {
-    super('No Yahoo account is paired yet.');
+    super('No email account is connected yet.');
     this.name = 'NotPairedError';
   }
 }

@@ -32,8 +32,8 @@ export function createClient(options: ConnectionOptions): ImapFlow {
       pass: options.appPassword,
     },
     logger: options.verbose ? undefined : false,
-    // Yahoo is strict about client identification; a missing ID is sometimes
-    // met with throttling.
+    // Providers (Yahoo especially) are strict about client identification; a
+    // missing ID is sometimes met with throttling.
     clientInfo: {
       name: 'DayDesk',
       version: '0.1.0',
@@ -56,7 +56,7 @@ export async function verifyCredentials(
     await client.logout();
     return { ok: true };
   } catch (error) {
-    return { ok: false, error: describeImapError(error) };
+    return { ok: false, error: describeImapError(error, options.provider) };
   } finally {
     // logout() already closes on the happy path; this covers the failure path.
     if (client.usable) client.close();
@@ -87,24 +87,31 @@ export async function withReadOnlyMailbox<T>(
   }
 }
 
-/** Turn IMAP failures into something worth showing a human. */
-export function describeImapError(error: unknown): string {
+/**
+ * Turn IMAP failures into something worth showing a human, naming the
+ * provider in use. Without one (e.g. before an account exists) it stays neutral.
+ */
+export function describeImapError(error: unknown, provider?: MailProvider): string {
   if (!(error instanceof Error)) return 'Unknown IMAP error.';
+
+  const name = provider?.displayName ?? 'Your mail provider';
+  const host = provider?.imap.host ?? 'the mail server';
+  const passwordKind = provider ? `a ${provider.displayName} app password` : 'an app password';
 
   const message = error.message || '';
   const code = (error as { authenticationFailed?: boolean; code?: string }).code ?? '';
 
   if ((error as { authenticationFailed?: boolean }).authenticationFailed || /AUTHENTICATIONFAILED/i.test(message)) {
-    return 'Yahoo rejected the credentials. Check the email address, and make sure the password is a Yahoo app password rather than your account password.';
+    return `${name} rejected the credentials. Check the email address, and make sure the password is ${passwordKind} rather than your account password.`;
   }
   if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
-    return 'Could not reach imap.mail.yahoo.com. Check your network connection.';
+    return `Could not reach ${host}. Check your network connection.`;
   }
   if (code === 'ETIMEDOUT' || /timed? ?out/i.test(message)) {
-    return 'The connection to Yahoo timed out.';
+    return `The connection to ${provider?.displayName ?? 'the mail server'} timed out.`;
   }
   if (/\[OVERQUOTA\]|too many|throttl/i.test(message)) {
-    return 'Yahoo is rate-limiting this connection. DayDesk will retry shortly.';
+    return `${name} is rate-limiting this connection. DayDesk will retry shortly.`;
   }
   return message || 'Unknown IMAP error.';
 }

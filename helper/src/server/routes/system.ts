@@ -84,15 +84,24 @@ export async function registerSystemRoutes(
       const verified = await verifyCredentials({
         provider,
         email,
-        appPassword: appPassword.replace(/\s+/g, ''), // Yahoo displays app passwords in spaced groups.
+        appPassword: appPassword.replace(/\s+/g, ''), // Yahoo and Google show app passwords in spaced groups.
       });
 
       if (!verified.ok) {
         // Deliberately 422, not 401. The auth hook already uses 401 to mean
         // "your pairing token is bad", and the extension's client maps any 401
-        // to that. Reusing it here reported a rejected Yahoo credential as a
-        // token failure and threw away Yahoo's actual explanation.
+        // to that. Reusing it here reported a rejected mail credential as a
+        // token failure and threw away the provider's actual explanation.
         return reply.code(422).send({ error: 'credentials_rejected', message: verified.error });
+      }
+
+      // One account at a time: pairing a different address replaces the old
+      // account (its archive and tasks cascade away), so its password must not
+      // linger in the Keychain either.
+      const previous = accountsStore.getAccount(deps.db);
+      if (previous && previous.email !== email) {
+        await deps.session.stop();
+        deleteAppPassword(previous.email);
       }
 
       saveAppPassword(email, appPassword.replace(/\s+/g, ''));

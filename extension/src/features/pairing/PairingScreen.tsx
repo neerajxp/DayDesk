@@ -4,13 +4,15 @@
  * Stage 1 is the helper's pairing token, pasted from ~/.daydesk/token. Without
  * it the panel cannot call the helper at all.
  *
- * Stage 2 is the Yahoo account. The app password is posted straight to the
+ * Stage 2 is the email account — Yahoo or Gmail, one at a time. The app
+ * password is posted straight to the
  * helper, which verifies it over IMAP and stores it in the macOS Keychain — it
  * is never written to chrome.storage and never kept in the extension.
  */
 
 import { useState } from 'react';
 import { createApi } from '../../lib/api/client.js';
+import { guessProvider, providerById, PROVIDERS, type ProviderId } from '../../lib/providers.js';
 
 interface TokenStageProps {
   readonly onPaired: (token: string) => void;
@@ -87,10 +89,21 @@ interface AccountStageProps {
 }
 
 export function AccountStage({ token, onPaired, onResetToken }: AccountStageProps) {
+  const [providerId, setProviderId] = useState<ProviderId>('yahoo');
+  // Once the user picks a provider by hand, the address stops overriding it.
+  const [isProviderChosen, setIsProviderChosen] = useState(false);
   const [email, setEmail] = useState('');
   const [appPassword, setAppPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPairing, setIsPairing] = useState(false);
+
+  const provider = providerById(providerId) ?? PROVIDERS[0]!;
+
+  function changeEmail(next: string): void {
+    setEmail(next);
+    const guessed = guessProvider(next);
+    if (guessed && !isProviderChosen) setProviderId(guessed);
+  }
 
   async function submit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
@@ -98,10 +111,10 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
     setError(null);
 
     try {
-      await createApi(token).pair(email.trim(), appPassword);
+      await createApi(token).pair(email.trim(), appPassword, providerId);
       onPaired();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Pairing failed.');
+      setError(cause instanceof Error ? cause.message : 'Connecting failed.');
     } finally {
       setIsPairing(false);
     }
@@ -109,34 +122,49 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
 
   return (
     <div className="state">
-      <h2 className="state__title">Add your Yahoo account</h2>
+      <h2 className="state__title">Connect your email</h2>
       <p className="state__text">
-        Yahoo has no public mail API, so DayDesk reads over IMAP using a third-party app password —
-        not your account password.
-      </p>
-      <p className="state__text">
-        <a
-          href="https://help.yahoo.com/kb/SLN15241.html"
-          target="_blank"
-          rel="noreferrer noopener"
-          style={{ color: 'var(--accent-strong)' }}
-        >
-          Generate one in Yahoo Account Security ↗
-        </a>
+        DayDesk watches one email account for bills, signatures and requests. Choose where your mail lives.
       </p>
 
       <form className="form" onSubmit={submit}>
+        <div className="provider-choice" role="radiogroup" aria-label="Email provider">
+          {PROVIDERS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={providerId === option.id}
+              className="provider-choice__option"
+              onClick={() => {
+                setProviderId(option.id);
+                setIsProviderChosen(true);
+              }}
+            >
+              {option.name}
+            </button>
+          ))}
+        </div>
+
+        <p className="state__text">
+          {provider.howTo}{' '}
+          <a href={provider.helpUrl} target="_blank" rel="noreferrer noopener" style={{ color: 'var(--accent-strong)' }}>
+            {provider.helpLabel} ↗
+          </a>
+        </p>
+
         <div className="field">
           <label className="field__label" htmlFor="account-email">
-            Yahoo address
+            {provider.addressLabel}
           </label>
           <input
             id="account-email"
             className="field__input"
             type="email"
             autoComplete="username"
+            placeholder={provider.addressPlaceholder}
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => changeEmail(event.target.value)}
             required
           />
         </div>
@@ -167,7 +195,7 @@ export function AccountStage({ token, onPaired, onResetToken }: AccountStageProp
           className="button"
           disabled={isPairing || email.trim().length === 0 || appPassword.length === 0}
         >
-          {isPairing ? 'Verifying with Yahoo…' : 'Connect account'}
+          {isPairing ? `Verifying with ${provider.name}…` : `Connect ${provider.name}`}
         </button>
 
         <button type="button" className="button button--quiet" onClick={onResetToken}>

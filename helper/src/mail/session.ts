@@ -90,7 +90,7 @@ export class MailSession {
       await this.startIdle();
       this.startReconcileTimer();
     } catch (error) {
-      this.lastError = describeImapError(error);
+      this.lastError = describeImapError(error, this.provider ?? undefined);
       this.scheduleReconnect();
     }
   }
@@ -117,8 +117,12 @@ export class MailSession {
     const account = accountsStore.getAccount(this.db);
     const folders = account ? foldersStore.listFolders(this.db, account.id) : [];
 
+    const provider = account ? getProvider(account.provider_id) : null;
+
     return {
       accountEmail: account?.email ?? null,
+      providerId: provider?.id ?? null,
+      providerName: provider?.displayName ?? null,
       isPaired: account !== null,
       isConnected: this.syncClient?.usable === true,
       isSyncing: this.isSyncing,
@@ -136,13 +140,13 @@ export class MailSession {
 
   /** Request a sync. Coalesces with any pass already running. */
   async requestSync(role?: FolderRole): Promise<void> {
-    if (!this.syncClient?.usable) throw new Error('Not connected to Yahoo.');
+    if (!this.syncClient?.usable) throw new Error(`Not connected to ${this.provider?.displayName ?? 'your mail server'}.`);
     await this.runSync(() => this.syncThenScan(role));
   }
 
   /** Fetch a body on demand, caching it. Returns null if the message is gone. */
   async loadBody(messageRowId: number, role: FolderRole, uid: number): Promise<ParsedBody | null> {
-    if (!this.syncClient?.usable) throw new Error('Not connected to Yahoo.');
+    if (!this.syncClient?.usable) throw new Error(`Not connected to ${this.provider?.displayName ?? 'your mail server'}.`);
     if (this.accountId === null) throw new Error('No account configured.');
 
     const folder = foldersStore.getFolder(this.db, this.accountId, role);
@@ -182,7 +186,7 @@ export class MailSession {
       await this.prefetchBodies(scanWindowStart(now, config.taskScanDays), config.bodyPrefetchLimit);
     } catch (error) {
       // Not surfaced as lastError: runSync clears that on success, and this is not fatal.
-      console.warn(`DayDesk: body prefetch stopped early — ${describeImapError(error)}`);
+      console.warn(`DayDesk: body prefetch stopped early — ${describeImapError(error, this.provider ?? undefined)}`);
     }
 
     const result = scanForTasks(this.db, this.accountId, { now, windowDays: config.taskScanDays });
@@ -229,7 +233,7 @@ export class MailSession {
         await task();
         this.lastError = null;
       } catch (error) {
-        this.lastError = describeImapError(error);
+        this.lastError = describeImapError(error, this.provider ?? undefined);
       } finally {
         this.isSyncing = false;
         this.pendingSync = null;
@@ -263,7 +267,7 @@ export class MailSession {
     for (const client of [this.syncClient, this.idleClient]) {
       if (!client) continue;
       client.on('error', (error: unknown) => {
-        this.lastError = describeImapError(error);
+        this.lastError = describeImapError(error, this.provider ?? undefined);
         this.scheduleReconnect();
       });
       client.on('close', () => {
@@ -272,7 +276,7 @@ export class MailSession {
     }
   }
 
-  /** Exponential backoff, capped. Yahoo throttles aggressive reconnects. */
+  /** Exponential backoff, capped. Providers throttle aggressive reconnects. */
   private scheduleReconnect(): void {
     if (this.stopped) return;
 

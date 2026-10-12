@@ -2,7 +2,7 @@
  * Task routes: the Today board's data.
  *
  * Mounted under /api/tasks. These write only to DayDesk's local database —
- * ticking a task off never touches Yahoo.
+ * ticking a task off never touches your mailbox.
  */
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
@@ -44,7 +44,7 @@ export async function registerTaskRoutes(app: FastifyInstance, deps: TaskRouteDe
   function requireAccount(): { id: number } {
     const account = accountsStore.getAccount(deps.db);
     if (!account) {
-      const error = new Error('DayDesk is not paired with a Yahoo account yet.') as Error & { statusCode?: number };
+      const error = new Error('DayDesk is not connected to an email account yet.') as Error & { statusCode?: number };
       error.statusCode = 409;
       throw error;
     }

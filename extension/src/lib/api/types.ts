@@ -55,6 +55,9 @@ export interface FolderState {
 
 export interface SyncStatus {
   accountEmail: string | null;
+  /** "yahoo" or "gmail", and its display name — null before an account is connected. */
+  providerId: string | null;
+  providerName: string | null;
   isPaired: boolean;
   isConnected: boolean;
   isSyncing: boolean;

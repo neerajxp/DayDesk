@@ -16,14 +16,32 @@ const WHATSAPP_URL = 'https://web.whatsapp.com/';
 
 interface SourcesSheetProps {
   readonly accountEmail: string | null;
+  /** "Yahoo Mail" or "Gmail". */
+  readonly providerName: string | null;
   readonly isMailOn: boolean;
+  /** Disconnect the email account, so another can be connected. */
+  readonly onDisconnect: () => Promise<void>;
   readonly whatsApp: WhatsAppState;
   readonly onClose: () => void;
 }
 
-export function SourcesSheet({ accountEmail, isMailOn, whatsApp, onClose }: SourcesSheetProps) {
+export function SourcesSheet({ accountEmail, providerName, isMailOn, onDisconnect, whatsApp, onClose }: SourcesSheetProps) {
   const { watchList, status, isConnected } = whatsApp;
   const [draft, setDraft] = useState('');
+  const [isConfirmingChange, setIsConfirmingChange] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [changeError, setChangeError] = useState<string | null>(null);
+
+  const disconnect = async (): Promise<void> => {
+    setIsDisconnecting(true);
+    setChangeError(null);
+    try {
+      await onDisconnect();
+    } catch (cause) {
+      setChangeError(cause instanceof Error ? cause.message : 'Could not disconnect the account.');
+      setIsDisconnecting(false);
+    }
+  };
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Escape closes; focus lands on the one thing you came here to do.
@@ -73,11 +91,38 @@ export function SourcesSheet({ accountEmail, isMailOn, whatsApp, onClose }: Sour
           <section className="source" aria-labelledby="source-mail">
             <h3 className="source__name" id="source-mail">
               <span className="source-dot" data-on={isMailOn} aria-hidden="true" />
-              Yahoo Mail
+              Email{providerName ? ` · ${providerName}` : ''}
             </h3>
             <p className="source__detail">
               {accountEmail ?? 'No account'} · {isMailOn ? 'connected' : 'not connected'} · last 30 days of inbox
             </p>
+
+            {!isConfirmingChange ? (
+              <button type="button" className="source__link source__link--quiet" onClick={() => setIsConfirmingChange(true)}>
+                Change account…
+              </button>
+            ) : (
+              <div className="source__confirm" role="alert">
+                <p className="source__detail">
+                  DayDesk watches one email account. Switching removes this account’s archived mail, its tasks and
+                  its saved password from this Mac. Your mailbox itself is not touched.
+                </p>
+                {changeError && <p className="error-text">{changeError}</p>}
+                <div className="source__confirm-actions">
+                  <button type="button" className="button" disabled={isDisconnecting} onClick={() => void disconnect()}>
+                    {isDisconnecting ? 'Disconnecting…' : 'Disconnect and switch'}
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--quiet"
+                    disabled={isDisconnecting}
+                    onClick={() => setIsConfirmingChange(false)}
+                  >
+                    Keep {providerName ?? 'this account'}
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
 
           <section className="source" aria-labelledby="source-whatsapp">

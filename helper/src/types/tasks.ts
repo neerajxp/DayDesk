@@ -1,7 +1,7 @@
 /**
  * Task domain types — the "what needs doing" layer on top of the mail archive.
  *
- * Tasks are DayDesk's own data. Marking one done never touches Yahoo; it only
+ * Tasks are DayDesk's own data. Marking one done never touches your mailbox; it only
  * changes a row in the local database.
  */
 

@@ -2,7 +2,7 @@
  * Pairing token persistence.
  *
  * The token lives in chrome.storage.local, which is scoped to the extension and
- * not reachable by web pages. The Yahoo app password is never stored here — it
+ * not reachable by web pages. The email app password is never stored here — it
  * goes straight to the helper, which puts it in the macOS Keychain.
  */
 

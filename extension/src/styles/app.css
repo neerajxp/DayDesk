@@ -360,6 +360,39 @@ body {
 
 /* ── Forms ──────────────────────────────────────────────────────────────── */
 
+/* Provider choice on the connect screen: a two-way segmented switch. */
+.provider-choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-md);
+}
+
+.provider-choice__option {
+  padding: var(--space-sm) 0;
+  appearance: none;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.provider-choice__option:hover {
+  color: var(--text-primary);
+}
+
+.provider-choice__option[aria-checked='true'] {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-raised);
+}
+
 .form {
   display: grid;
   gap: var(--space-md);

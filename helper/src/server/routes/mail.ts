@@ -2,7 +2,7 @@
  * Mail routes: list, detail, search, sync.
  *
  * Mounted under /api/mail. Read-only by design — there is no endpoint here that
- * changes anything on Yahoo's side.
+ * changes anything on the provider's side.
  */
 
 import type { FastifyInstance } from 'fastify';
@@ -47,7 +47,7 @@ export async function registerMailRoutes(app: FastifyInstance, deps: MailRouteDe
   function requireAccount(): { id: number } {
     const account = accountsStore.getAccount(deps.db);
     if (!account) {
-      const error = new Error('DayDesk is not paired with a Yahoo account yet.') as Error & {
+      const error = new Error('DayDesk is not connected to an email account yet.') as Error & {
         statusCode?: number;
       };
       error.statusCode = 409;
@@ -91,8 +91,8 @@ export async function registerMailRoutes(app: FastifyInstance, deps: MailRouteDe
   /**
    * Message detail, fetching and caching the body on first open.
    *
-   * A cache miss hits Yahoo; a hit is purely local. The mailbox is opened
-   * read-only, so this does not mark the message read on Yahoo's side.
+   * A cache miss hits the mail server; a hit is purely local. The mailbox is opened
+   * read-only, so this does not mark the message read on the server.
    */
   app.get<{ Params: { id: number } }>(
     '/api/mail/messages/:id',
