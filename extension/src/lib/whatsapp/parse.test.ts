@@ -78,8 +78,8 @@ describe('watch list', () => {
 });
 
 test('your own chat matches without the "(You)" label', () => {
-  expect(isWatched(['Neeraj Maurya'], { title: 'Neeraj Maurya (You)', jid: null })).toBe(true);
-  expect(isWatched(['Neeraj Maurya (You)'], { title: 'Neeraj Maurya', jid: null })).toBe(true);
+  expect(isWatched(['Alex Rivera'], { title: 'Alex Rivera (You)', jid: null })).toBe(true);
+  expect(isWatched(['Alex Rivera (You)'], { title: 'Alex Rivera', jid: null })).toBe(true);
 });
 
 describe('parseListTime', () => {

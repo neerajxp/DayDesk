@@ -139,7 +139,7 @@ describe('stored WhatsApp messages get a second look', () => {
     // Stored by an older version of the rules, which found nothing in it.
     const row = insertChatMessage(db, {
       source: 'whatsapp',
-      chatName: 'Neeraj Maurya',
+      chatName: 'Alex Rivera',
       sender: '',
       text: 'Pay pseg 25$ today',
       isFromMe: false,

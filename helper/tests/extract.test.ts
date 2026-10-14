@@ -101,7 +101,7 @@ describe('extractTasks', () => {
 
   test('finds a direct instruction to pay, titled after the payee', () => {
     const [task] = extractTasks(
-      email({ subject: 'pay invoice to testfirm', fromName: '', fromAddress: 'neerajxp@gmail.com', bodyText: 'pay invoice to testfirm' }),
+      email({ subject: 'pay invoice to testfirm', fromName: '', fromAddress: 'alex.rivera@gmail.com', bodyText: 'pay invoice to testfirm' }),
     );
     expect(task).toMatchObject({ kind: 'pay', title: 'Pay testfirm' });
   });

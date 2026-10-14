@@ -268,21 +268,21 @@ describe('knowing who "you" are', () => {
   test('marks tasks you sent yourself — by address, by Sent-mail name, and in your own WhatsApp chat', async () => {
     const { insertChatMessage } = await import('../src/store/chat.js');
     const db = createTestDatabase();
-    const accountId = upsertAccount(db, 'neerajxp@yahoo.com', 'yahoo').id;
+    const accountId = upsertAccount(db, 'alex.rivera@yahoo.com', 'yahoo').id;
     const inboxId = upsertFolder(db, accountId, 'inbox', 'INBOX').id;
     const sentId = upsertFolder(db, accountId, 'sent', 'Sent').id;
 
     // Your Sent mail teaches the helper your display name.
-    insertMessages(db, sentId, [message(1, { from: { name: 'Neeraj Maurya', address: 'neerajxp@yahoo.com' } })]);
+    insertMessages(db, sentId, [message(1, { from: { name: 'Alex Rivera', address: 'alex.rivera@yahoo.com' } })]);
     insertMessages(db, inboxId, [
-      message(2, { subject: 'pay invoice to testfirm', from: { name: 'Neeraj Maurya', address: 'neerajxp@gmail.com' } }),
+      message(2, { subject: 'pay invoice to testfirm', from: { name: 'Alex Rivera', address: 'alex.rivera@gmail.com' } }),
       message(3, { subject: 'Your PG&E bill is ready' }),
     ]);
     scanForTasks(db, accountId, { now: NOW, windowDays: 30 });
 
     const chatRow = insertChatMessage(db, {
       source: 'whatsapp',
-      chatName: 'Neeraj Maurya',
+      chatName: 'Alex Rivera',
       sender: '',
       text: 'pay credit card bill',
       isFromMe: false,

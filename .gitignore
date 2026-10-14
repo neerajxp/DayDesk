@@ -19,3 +19,13 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Local data and secrets — never commit (DayDesk keeps these in ~/.daydesk)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+.daydesk/
+token
+*.pem
+*.key

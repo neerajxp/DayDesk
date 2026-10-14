@@ -153,11 +153,11 @@ describe('sources and trail', () => {
   });
 
   test('originOf does not name you on your own list', () => {
-    expect(originOf(task({ chat: { ...chat, chatName: 'Neeraj Maurya', sender: '', isFromYou: true } }))).toEqual({
+    expect(originOf(task({ chat: { ...chat, chatName: 'Alex Rivera', sender: '', isFromYou: true } }))).toEqual({
       origin: 'whatsapp',
       who: null,
     });
-    expect(originOf(task({ message: { ...email, fromName: 'Neeraj Maurya', isFromYou: true } }))).toEqual({
+    expect(originOf(task({ message: { ...email, fromName: 'Alex Rivera', isFromYou: true } }))).toEqual({
       origin: 'email',
       who: null,
     });
