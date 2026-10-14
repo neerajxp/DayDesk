@@ -7,6 +7,27 @@ changes anything in your mailbox.
 
 ---
 
+## Screenshots
+
+The Today board turns your email and chosen WhatsApp chats into one to-do list. (Sample data.)
+
+<p>
+  <img src="docs/screenshots/today-day.png" alt="Today board, day mode" width="300">
+  <img src="docs/screenshots/today-night.png" alt="Today board, night mode" width="300">
+</p>
+
+Six styles, each with a day and a night palette, chosen from the Appearance menu:
+
+<img src="docs/screenshots/styles.png" alt="The six styles: Desk, Ledger, Notebook, Terminal, Bento and Cards" width="720">
+
+<p>
+  <img src="docs/screenshots/appearance-menu.png" alt="Appearance menu: mode and style" width="240">
+  <img src="docs/screenshots/sources.png" alt="Sources: email account and WhatsApp watch list" width="240">
+  <img src="docs/screenshots/connect.png" alt="Connect your email" width="240">
+</p>
+
+---
+
 ## Why there are two halves
 
 Chrome extensions (Manifest V3) have no raw socket API, and Yahoo has no public REST mail API — IMAP
